@@ -1,0 +1,30 @@
+{
+  "name": "delegate2-name-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@fastify/static": "^7.0.4",
+    "@fastify/view": "^9.0.0",
+    "@google-cloud/datastore": "^8.0.0",
+    "@google-cloud/tasks": "^5.2.1",
+    "axios": "^1.6.2",
+    "canvas": "^2.11.2",
+    "dotenv": "^16.0.3",
+    "ethers": "^5.7.2",
+    "fastify": "^4.21.0",
+    "liquidjs": "^10.10.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
