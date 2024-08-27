@@ -51,7 +51,8 @@ export function arbDelegateDelegate(request, reply) {
   }
 
   if (!userAddress) {
-    console.log(`Untrusted data: ${request?.body?.untrustedData}`);
+    console.log("Untrusted data:", request?.body?.untrustedData);
+    console.log("Body:", request?.body);
     title = "Invalid or missing address";
     description = "Please provide a valid address to check its delegate.";
     imageUrl = `${host}/static/img/delegate/arb/arb-delegate-no-address.png`;
