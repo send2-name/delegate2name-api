@@ -9,7 +9,7 @@ export async function getNames(address) {
 
   // fetch data from API using axios
   try {
-    const response = await axios.get(`https://api.ensdata.net/${address}`);
+    const response = await axios.get(`https://api.ensdata.net/${address}`, {timeout: 2500});
     const data = response.data;
 
     if (data.error) {

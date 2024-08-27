@@ -1,4 +1,4 @@
-import { getAddressFromFid } from "../../../utils/airstack.js";
+import { getSocialsFromAddress, getSocialsFromFid } from "../../../utils/airstack.js";
 import { getPageUrl } from "../../../utils/request.js";
 import { getArbBalance } from '../../../utils/balance.js';
 import { getArbitrumDelegate } from '../../../utils/dao.js';
@@ -53,31 +53,47 @@ export async function arbDelegateDelegate(request, reply) {
   console.log("get address...")
 
   let userAddress = getAddress(request.query.addr);
+  let userFarcaster;
+  let userEns;
+  let userAvatar;
+  let userName;
 
   console.log("userAddress: ", userAddress);
 
   if (!userAddress) {
-    const fid = request?.body?.untrustedData?.fid;
+    const fid = request?.body?.untrustedData?.fid || request.query.fid;
 
     console.log("get address from fid: ", fid);
 
-    if (fid) {}
-    const fidQuery = await getAddressFromFid(fid);
+    if (fid) {
+      const fidQuery = await getSocialsFromFid(fid);
 
-    console.log("fidQuery: ", fidQuery);
+      console.log("fidQuery: ", fidQuery);
 
-    if (fidQuery.success) {
-      userAddress = getAddress(fidQuery.userAddress);
+      if (fidQuery.success) {
+        userAddress = getAddress(fidQuery?.userAddress);
+        userFarcaster = fidQuery?.farcaster;
+        userEns = fidQuery?.ens;
+        userAvatar = fidQuery?.avatar;
+
+        if (userEns) {
+          userName = userEns;
+        } else if (userFarcaster) {
+          userName = userFarcaster;
+        } else {
+          userName = userAddress.slice(0, 6) + "..." + userAddress.slice(-4);
+        }
+      }
     }
   }
 
   if (!userAddress) {
     title = "Invalid or missing address";
     description = "Please provide a valid address to check its delegate.";
-    imageUrl = `${host}/static/img/delegate/arb/arb-delegate-no-address.png`;
+    imageUrl = `${host}/static/img/delegate/arb/arb-delegate-error.png`;
     button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
 
-    return reply.view("./templates/delegate/arb/error-delegate-no-address.liquid", {
+    return reply.view("./templates/delegate/arb/error-delegate.liquid", {
       button1,
       description,
       imageUrl,
@@ -99,21 +115,7 @@ export async function arbDelegateDelegate(request, reply) {
   console.log("delegateQuery: ", delegateQuery);
 
   const delegateAddress = delegateQuery?.delegate;
-  let userName;
   let delegateName;
-
-  // fetch ENS names for user and delegate
-  const userNames = await getNames(userAddress, provider);
-
-  console.log("userNames from ENS data API: ", userNames);
-
-  if (userNames?.ens) {
-    userName = userNames?.ens;
-  } else if (userNames?.farcaster) {
-    userName = userNames?.farcaster;
-  } else {
-    userName = userAddress.slice(0, 6) + "..." + userAddress.slice(-4);
-  }
 
   // if no delegate, show a different frame
   if (!delegateAddress) {
@@ -131,16 +133,24 @@ export async function arbDelegateDelegate(request, reply) {
     });
   }
 
-  const delegateNames = await getNames(delegateAddress, provider);
+  let delegateFarcaster;
 
-  console.log("delegateNames from ENS data API: ", delegateNames);
-
-  if (delegateNames?.ens) {
-    delegateName = delegateNames?.ens;
-  } else if (delegateNames?.farcaster) {
-    delegateName = delegateNames?.farcaster;
+  if (String(delegateAddress).toLowerCase() === String(userAddress).toLowerCase()) {
+    delegateName = userName;
+    delegateFarcaster = userFarcaster;
   } else {
-    delegateName = delegateAddress.slice(0, 6) + "..." + delegateAddress.slice(-4);
+    const delegateNames = await getSocialsFromAddress(delegateAddress);
+    delegateFarcaster = delegateNames?.farcaster;
+
+    console.log("delegateNames from ENS data API: ", delegateNames);
+
+    if (delegateNames?.ens) {
+      delegateName = delegateNames?.ens;
+    } else if (delegateNames?.farcaster) {
+      delegateName = delegateNames?.farcaster;
+    } else {
+      delegateName = delegateAddress.slice(0, 6) + "..." + delegateAddress.slice(-4);
+    }
   }
 
   title = "My Arbitrum Delegate";
@@ -150,7 +160,7 @@ export async function arbDelegateDelegate(request, reply) {
   // TODO: share link (warpcastShareUrl), add frame url at the end
   let warpcastShareUrl = `https://warpcast.com/~/compose?text=My+Arbitrum+delegate+is+${delegateName}.+Check+yours+via+this+frame+made+by+%40tempetechie.eth+%26+%40tekr0x.eth+&embeds[]=${host}%2Fframe%2Fdelegate%2Farb%2Fshare%3Ft%3D${timestamp}%26user%3D${userName}%26balance%3D${balance}%26delegate%3D${delegateName}`;
 
-  if (delegateNames?.farcaster) {
+  if (delegateFarcaster) {
     warpcastShareUrl = `https://warpcast.com/~/compose?text=My+Arbitrum+delegate+is+%40${delegateName}.+Check+yours+via+this+frame+made+by+%40tempetechie.eth+%26+%40tekr0x.eth+&embeds[]=${host}%2Fframe%2Fdelegate%2Farb%2Fshare%3Ft%3D${timestamp}%26user%3D${userName}%26balance%3D${balance}%26delegate%3D${delegateName}`;
   }
 

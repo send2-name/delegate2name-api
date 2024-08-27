@@ -10,7 +10,7 @@ const chains = [
     chainId: 1,
     name: 'Ethereum',
     currency: 'ETH',
-    rpcs: ['https://rpc.ankr.com/eth'],
+    rpcs: ['https://arb1.arbitrum.io/rpc'],
     blockExplorer: 'https://etherscan.io',
   },
   {

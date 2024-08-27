@@ -1,4 +1,5 @@
-import dotenv from 'dotenv'; 
+import dotenv from 'dotenv';
+import { ethers } from 'ethers'; 
 import { fetchQuery, init } from "@airstack/node";
 import { getEnvVar } from './datastore.js';
 
@@ -14,14 +15,24 @@ if (process.env.MYLOCALHOST) {
 
 init(apiKey);
 
-export async function getAddressFromFid(fid) {
+export async function getSocialsFromAddress(address) {
   // get fan token earnings query
   const query = `
     query MyQuery {
-      Socials(input: {filter: {userId: {_eq: "${fid}"}}, blockchain: ethereum}) {
+      Socials(
+        input: {filter: {userAssociatedAddresses: {_eq: "${address}"}}, blockchain: ethereum}
+      ) {
         Social {
           connectedAddresses {
             address
+          }
+          profileHandle
+          profileImage
+          userAssociatedAddressDetails {
+            primaryDomain {
+              name
+              resolvedAddress
+            }
           }
         }
       }
@@ -37,20 +48,102 @@ export async function getAddressFromFid(fid) {
       return { success: false, message: error };
     }
 
-    let userAddress;
+    console.log(result);
+
+    const socialsArray = result?.data.Socials?.Social || [];
+
+    for (let i = 0; i < socialsArray.length; i++) {
+      const connectedAddresses = result?.data.Socials?.Social[0]?.connectedAddresses || [];
+      let userAddress;
+
+      for (let i = 0; i < connectedAddresses.length; i++) {
+        // if is a valid EVM address (to avoid using a non-EVM address)
+        if (ethers.utils.isAddress(connectedAddresses[i]?.address)) {
+          userAddress = connectedAddresses[i]?.address;
+          break;
+        }
+      }
+
+      if (String(userAddress).toLowerCase() !== String(address).toLowerCase()) {
+        const profileHandle = socialsArray[i]?.profileHandle || null;
+        const profileImage = socialsArray[i]?.profileImage || null;
+        let ensName;
+        const associatedAddresses = socialsArray[i]?.userAssociatedAddressDetails || [];
+
+        for (let j = 0; j < associatedAddresses.length; j++) {
+          if (String(associatedAddresses[j].primaryDomain?.resolvedAddress).toLowerCase() === String(userAddress).toLowerCase()) {
+            ensName = associatedAddresses[j].primaryDomain?.name;
+            break;
+          }
+        }
+
+        return { success: true, userAddress, farcaster: profileHandle, avatar: profileImage, ens: ensName };
+      }
+    }
+  } catch (e) {
+    console.log(e);
+    return { success: false, message: e };
+  }
+}
+
+export async function getSocialsFromFid(fid) {
+  // get fan token earnings query
+  const query = `
+    query MyQuery {
+      Socials(input: {filter: {userId: {_eq: "${fid}"}}, blockchain: ethereum}) {
+        Social {
+          connectedAddresses {
+            address
+          }
+          profileHandle
+          profileImage
+          userAssociatedAddressDetails {
+            primaryDomain {
+              name
+              resolvedAddress
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  try {
+    const result = await fetchQuery(query);
 
     console.log(result);
 
-    try {
-      userAddress = result?.data.Socials?.Social[0]?.connectedAddresses[0]?.address || [];
-    } catch (e) {
-      console.error("Error fetching user addresses by FID:");
-      console.log(e);
-      console.log(result);
-      return { success: false, message: e };
+    const error = result?.error || null;
+
+    if (error) {
+      console.error(error);
+      return { success: false, message: error };
     }
 
-    return { success: true, userAddress: userAddress };
+    const connectedAddresses = result?.data.Socials?.Social[0]?.connectedAddresses || [];
+    let userAddress;
+
+    for (let i = 0; i < connectedAddresses.length; i++) {
+      // if is a valid EVM address (to avoid using a non-EVM address)
+      if (ethers.utils.isAddress(connectedAddresses[i]?.address)) {
+        userAddress = connectedAddresses[i]?.address;
+        break;
+      }
+    }
+
+    const profileHandle = result?.data.Socials?.Social[0]?.profileHandle || null;
+    const profileImage = result?.data.Socials?.Social[0]?.profileImage || null;
+    let ensName;
+    const associatedAddresses = result?.data.Socials?.Social[0]?.userAssociatedAddressDetails || null;
+
+    for (let i = 0; i < associatedAddresses.length; i++) {
+      if (String(associatedAddresses[i].primaryDomain?.resolvedAddress).toLowerCase() === String(userAddress).toLowerCase()) {
+        ensName = associatedAddresses[i].primaryDomain?.name;
+        break;
+      }
+    }
+
+    return { success: true, userAddress, farcaster: profileHandle, avatar: profileImage, ens: ensName };
   } catch (e) {
     console.log(e);
     return { success: false, message: e };
