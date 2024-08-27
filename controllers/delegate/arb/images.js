@@ -23,8 +23,6 @@ export async function delegateArbDelegate(request, reply) {
   const delegateQuery = await getArbitrumDelegate(user, provider);
   let delegate = delegateQuery.delegate;
 
-  console.log(`User 1: ${user}, Delegate 1: ${delegate}`);
-
   // fetch ENS names for user and delegate
   const userNames = await getNames(user, provider);
 
@@ -37,8 +35,6 @@ export async function delegateArbDelegate(request, reply) {
   if (delegateNames.ens) {
     delegate = delegateNames.ens;
   }
-
-  console.log(`User 2: ${user}, Delegate 2: ${delegate}`);
 
   // if no ENS name for user, use short address
   if (ethers.utils.isAddress(user)) {

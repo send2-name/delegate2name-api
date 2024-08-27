@@ -1,5 +1,6 @@
-import { getAddress } from "../../../utils/sanitize.js";
+import { getAddressFromFid } from "../../../utils/airstack.js";
 import { getPageUrl } from "../../../utils/request.js";
+import { getAddress } from "../../../utils/sanitize.js";
 import { validateFramesMessage } from "../../../utils/validate.js";
 
 export function arbDelegateStart1(request, reply) {
@@ -27,7 +28,7 @@ export function arbDelegateStart1(request, reply) {
   }
 }
 
-export function arbDelegateDelegate(request, reply) {
+export async function arbDelegateDelegate(request, reply) {
   // verify the user's signature via airstack API if signature is present
   if (request?.body?.untrustedData && request?.body?.trustedData) {
     validateFramesMessage(request.body.untrustedData, request.body.trustedData)
@@ -43,27 +44,22 @@ export function arbDelegateDelegate(request, reply) {
 
   let userAddress = getAddress(request.query.addr);
 
-  /* 
-  query MyQuery {
-    Socials(input: {filter: {userId: {_eq: "11299"}}, blockchain: ethereum}) {
-      Social {
-        fnames
-        userAssociatedAddresses
-      }
-    }
-  }
-  */
-
   console.log(`User address 1: ${userAddress}`);
 
   if (!userAddress) {
-    userAddress = getAddress(request?.body?.untrustedData?.address);
+    const fid = request?.body?.untrustedData?.fid;
+
+    if (fid) {}
+    const fidQuery = await getAddressFromFid(fid);
+
+    if (fidQuery.success) {
+      userAddress = getAddress(fidQuery.userAddress);
+    }
+
     console.log(`User address 2: ${userAddress}`);
   }
 
   if (!userAddress) {
-    console.log("Untrusted data:", request?.body?.untrustedData);
-    console.log("Body:", request?.body);
     title = "Invalid or missing address";
     description = "Please provide a valid address to check its delegate.";
     imageUrl = `${host}/static/img/delegate/arb/arb-delegate-no-address.png`;
@@ -86,7 +82,7 @@ export function arbDelegateDelegate(request, reply) {
   button1 = { text: "Submit", action: "post", url: `${host}/frame/delegate/arb/confirm?t=${timestamp}` };
   let button2 = { text: "Share", action: "link", url: `${host}/TODO` }; // TODO: add share link
 
-  reply.view("./templates/delegate/arb/delegate.liquid", {
+  return reply.view("./templates/delegate/arb/delegate.liquid", {
     button1,
     button2,
     description,
