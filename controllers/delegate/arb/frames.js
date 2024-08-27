@@ -28,6 +28,11 @@ export function arbDelegateStart1(request, reply) {
 }
 
 export function arbDelegateDelegate(request, reply) {
+  // verify the user's signature via airstack API if signature is present
+  if (request?.body?.untrustedData && request?.body?.trustedData) {
+    validateFramesMessage(request.body.untrustedData, request.body.trustedData)
+  }
+
   const timestamp = Math.floor(new Date().getTime() / 1000);
   const { pageUrl, host } = getPageUrl(request);
 
@@ -38,17 +43,21 @@ export function arbDelegateDelegate(request, reply) {
 
   let userAddress = getAddress(request.query.addr);
 
+  console.log(`User address 1: ${userAddress}`);
+
   if (!userAddress) {
     userAddress = getAddress(request?.body?.untrustedData?.address);
+    console.log(`User address 2: ${userAddress}`);
   }
 
   if (!userAddress) {
+    console.log(`Untrusted data: ${request?.body?.untrustedData}`);
     title = "Invalid or missing address";
     description = "Please provide a valid address to check its delegate.";
     imageUrl = `${host}/static/img/delegate/arb/arb-delegate-no-address.png`;
-    button1 = { text: "Check My Delegate", action: "post", url: `${host}/frame/delegate/arb/delegate?t=${timestamp}` };
+    button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
 
-    reply.view("./templates/delegate/arb/error-delegate-no-address.liquid", {
+    return reply.view("./templates/delegate/arb/error-delegate-no-address.liquid", {
       button1,
       description,
       imageUrl,
@@ -73,10 +82,5 @@ export function arbDelegateDelegate(request, reply) {
     pageUrl,
     title
   });
-
-  // verify the user's signature via airstack API if signature is present
-  if (request?.body?.untrustedData && request?.body?.trustedData) {
-    validateFramesMessage(request.body.untrustedData, request.body.trustedData)
-  }
 }
 
