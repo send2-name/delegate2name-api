@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Open Graph data -->
+  <meta property="og:site_name" content="{{ title }}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="{{ title }}" />
+  <meta property="og:description" content="{{ description }}" />
+  <meta property="og:image" content="{{ imageUrl }}" />
+  <meta property="og:url" content="{{ pageUrl }}" />
+
+  <!-- Twitter Card data -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@IggySocial" />
+  <meta name="twitter:title" content="{{ title }}" />
+  <meta name="twitter:description" content="{{ description }}" />
+  <meta name="twitter:image" content="{{ imageUrl }}" />
+
+  <!-- Farcaster Frame data -->
+  <meta property="fc:frame" content="vNext" />
+  <meta property="fc:frame:image" content="{{ imageUrl }}" />
+  <meta property="fc:frame:image:aspect_ratio" content="1:1.91" />
+
+  <meta name="fc:frame:input:text" content="Enter delegate addr/ENS" />
+
+  <meta name="fc:frame:button:1" content="{{button1.text}}" />
+  <meta name="fc:frame:button:1:action" content="{{button1.action}}" />
+  <meta name="fc:frame:button:1:post_url" content="{{button1.url}}" />
+
+  <meta name="fc:frame:button:2" content="{{button2.text}}" />
+  <meta name="fc:frame:button:2:action" content="{{button2.action}}" />
+  <meta name="fc:frame:button:2:target" content="{{button2.url}}" />
+  
+  <!-- Standard HTML metadata -->
+  <title>{{title}}</title>
+  <meta name="description" content="{{description}}" />
+</head>
+<body>
+  <p style="font-family: sans-serif">Click below to copy the frame link URL and share it on Farcaster:</p>
+  <input id="urlInput" type="text" value="{{ pageUrl }}" onclick="copyToClipboard()" style="width: 500px; height: 40px; font-size: 1.1em; border-radius: 0.5em; text-align: center;" readonly />
+  <br />
+  <br />
+  <img src="{{ imageUrl }}" alt="{{title}}" style="max-height: 500px;" onclick="copyToClipboard()" />
+
+  <script>
+    function copyToClipboard() {
+      const inputField = document.getElementById('urlInput');
+
+      // Select the input field's content
+      inputField.select();
+
+      // Copy the selected content to the clipboard
+      document.execCommand('copy');
+
+      // Show an alert box
+      alert('URL copied to clipboard!');
+    }
+  </script>
+</body>
+</html>

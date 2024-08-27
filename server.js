@@ -7,6 +7,15 @@ import fastifyView from "@fastify/view";
 
 import { index } from './controllers/public.js';
 
+import { 
+  arbDelegateStart1, 
+  arbDelegateDelegate,
+} from './controllers/delegate/arb/frames.js';
+
+import { 
+  delegateArbDelegate, 
+} from './controllers/delegate/arb/images.js';
+
 const app = Fastify({
   logger: true
 });
@@ -44,6 +53,14 @@ app.addHook('preHandler', (request, reply, done) => {
 
 // PUBLIC
 app.get('/', index);
+
+// ARBITRUM DELEGATE FRAMES
+app.get('/frame/delegate/arb/start-1', arbDelegateStart1);
+app.get('/frame/delegate/arb/delegate', arbDelegateDelegate);
+app.post('/frame/delegate/arb/delegate', arbDelegateDelegate);
+
+// ARBITRUM DELEGATE IMAGES
+app.get('/image/arb/delegate', delegateArbDelegate);
 
 // run the server
 app.listen({ port: process.env.PORT || 3000 }, function (err, address) {

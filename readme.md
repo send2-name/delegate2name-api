@@ -25,7 +25,7 @@ Go to Datastore on the Cloud Console and create the `EnvVar` kind. In the `EnvVa
 - Go to IAM and check the `Include Google-provided role grants` checkbox
   - Then give your "Cloud Build" service account the `Cloud Scheduler Admin` role
 - Create App Engine app (europe-west).
-  - This will also automatically create a Datastore database.
+  - This will also automatically create a Datastore database (it may take a few minutes).
 - Connect your GitHub repo with Google Cloud Repositories:
   - Go to repositories: https://console.cloud.google.com/cloud-build/repositories/2nd-gen 
   - Click on "Create host connection" and connect your GitHub (org or personal account)
