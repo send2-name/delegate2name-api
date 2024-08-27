@@ -56,6 +56,7 @@ app.get('/', index);
 
 // ARBITRUM DELEGATE FRAMES
 app.get('/frame/delegate/arb/start-1', arbDelegateStart1);
+app.post('/frame/delegate/arb/start-1', arbDelegateStart1);
 app.get('/frame/delegate/arb/delegate', arbDelegateDelegate);
 app.post('/frame/delegate/arb/delegate', arbDelegateDelegate);
 

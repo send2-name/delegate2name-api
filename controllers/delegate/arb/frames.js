@@ -43,6 +43,17 @@ export function arbDelegateDelegate(request, reply) {
 
   let userAddress = getAddress(request.query.addr);
 
+  /* 
+  query MyQuery {
+    Socials(input: {filter: {userId: {_eq: "11299"}}, blockchain: ethereum}) {
+      Social {
+        fnames
+        userAssociatedAddresses
+      }
+    }
+  }
+  */
+
   console.log(`User address 1: ${userAddress}`);
 
   if (!userAddress) {

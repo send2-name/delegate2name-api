@@ -39,7 +39,7 @@ export async function validateFramesMessage(untrustedData, trustedData) {
       }
     );
 
-    //console.log('Validate Message Response:', validateMessageResponse.data);
+    console.log('Validate Message Response:', validateMessageResponse.data);
 
     const { valid, message } = validateMessageResponse.data;
 
