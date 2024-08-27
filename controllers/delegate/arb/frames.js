@@ -35,6 +35,8 @@ export function arbDelegateStart1(request, reply) {
 }
 
 export async function arbDelegateDelegate(request, reply) {
+  console.log("start arbDelegateDelegate frame");
+
   // verify the user's signature via airstack API if signature is present
   if (request?.body?.untrustedData && request?.body?.trustedData) {
     validateFramesMessage(request.body.untrustedData, request.body.trustedData)
@@ -48,13 +50,21 @@ export async function arbDelegateDelegate(request, reply) {
   let imageUrl;
   let button1;
 
+  console.log("get address...")
+
   let userAddress = getAddress(request.query.addr);
+
+  console.log("userAddress: ", userAddress);
 
   if (!userAddress) {
     const fid = request?.body?.untrustedData?.fid;
 
+    console.log("get address from fid: ", fid);
+
     if (fid) {}
     const fidQuery = await getAddressFromFid(fid);
+
+    console.log("fidQuery: ", fidQuery);
 
     if (fidQuery.success) {
       userAddress = getAddress(fidQuery.userAddress);
@@ -78,14 +88,24 @@ export async function arbDelegateDelegate(request, reply) {
 
   const provider = getProvider(chainId);
 
+  console.log("get balance...")
+
   const balance = await getArbBalance(userAddress, provider, 4);
+
+  console.log("balance: ", balance);
+
   const delegateQuery = await getArbitrumDelegate(userAddress, provider);
-  const delegateAddress = delegateQuery.delegate;
+
+  console.log("delegateQuery: ", delegateQuery);
+
+  const delegateAddress = delegateQuery?.delegate;
   let userName;
   let delegateName;
 
   // fetch ENS names for user and delegate
   const userNames = await getNames(userAddress, provider);
+
+  console.log("userNames from ENS data API: ", userNames);
 
   if (userNames?.ens) {
     userName = userNames?.ens;
@@ -112,6 +132,8 @@ export async function arbDelegateDelegate(request, reply) {
   }
 
   const delegateNames = await getNames(delegateAddress, provider);
+
+  console.log("delegateNames from ENS data API: ", delegateNames);
 
   if (delegateNames?.ens) {
     delegateName = delegateNames?.ens;
