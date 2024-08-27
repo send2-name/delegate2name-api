@@ -10,10 +10,13 @@ import { index } from './controllers/public.js';
 import { 
   arbDelegateStart1, 
   arbDelegateDelegate,
+  arbDelegateShare,
 } from './controllers/delegate/arb/frames.js';
 
 import { 
   delegateArbDelegate, 
+  delegateArbNoDelegate,
+  delegateArbShare,
 } from './controllers/delegate/arb/images.js';
 
 const app = Fastify({
@@ -59,9 +62,12 @@ app.get('/frame/delegate/arb/start-1', arbDelegateStart1);
 app.post('/frame/delegate/arb/start-1', arbDelegateStart1);
 app.get('/frame/delegate/arb/delegate', arbDelegateDelegate);
 app.post('/frame/delegate/arb/delegate', arbDelegateDelegate);
+app.get('/frame/delegate/arb/share', arbDelegateShare);
 
 // ARBITRUM DELEGATE IMAGES
 app.get('/image/arb/delegate', delegateArbDelegate);
+app.get('/image/arb/no-delegate', delegateArbNoDelegate);
+app.get('/image/arb/share', delegateArbShare);
 
 // run the server
 app.listen({ port: process.env.PORT || 3000 }, function (err, address) {

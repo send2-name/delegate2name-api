@@ -1,7 +1,13 @@
 import { getAddressFromFid } from "../../../utils/airstack.js";
 import { getPageUrl } from "../../../utils/request.js";
+import { getArbBalance } from '../../../utils/balance.js';
+import { getArbitrumDelegate } from '../../../utils/dao.js';
+import { getNames } from '../../../utils/names.js';
+import { getProvider } from '../../../utils/network.js';
 import { getAddress } from "../../../utils/sanitize.js";
 import { validateFramesMessage } from "../../../utils/validate.js";
+
+const chainId = 42161;
 
 export function arbDelegateStart1(request, reply) {
   const timestamp = Math.floor(new Date().getTime() / 1000);
@@ -44,8 +50,6 @@ export async function arbDelegateDelegate(request, reply) {
 
   let userAddress = getAddress(request.query.addr);
 
-  console.log(`User address 1: ${userAddress}`);
-
   if (!userAddress) {
     const fid = request?.body?.untrustedData?.fid;
 
@@ -55,8 +59,6 @@ export async function arbDelegateDelegate(request, reply) {
     if (fidQuery.success) {
       userAddress = getAddress(fidQuery.userAddress);
     }
-
-    console.log(`User address 2: ${userAddress}`);
   }
 
   if (!userAddress) {
@@ -74,13 +76,65 @@ export async function arbDelegateDelegate(request, reply) {
     });
   }
 
+  const provider = getProvider(chainId);
+
+  const balance = await getArbBalance(userAddress, provider, 4);
+  const delegateQuery = await getArbitrumDelegate(userAddress, provider);
+  const delegateAddress = delegateQuery.delegate;
+  let userName;
+  let delegateName;
+
+  // fetch ENS names for user and delegate
+  const userNames = await getNames(userAddress, provider);
+
+  if (userNames?.ens) {
+    userName = userNames?.ens;
+  } else if (userNames?.farcaster) {
+    userName = userNames?.farcaster;
+  } else {
+    userName = userAddress.slice(0, 6) + "..." + userAddress.slice(-4);
+  }
+
+  // if no delegate, show a different frame
+  if (!delegateAddress) {
+    title = "No Arbitrum Delegate";
+    description = "You don't have an Arbitrum delegate yet.";
+    imageUrl = `${host}/image/arb/no-delegate?t=${timestamp}&user=${userName}&balance=${balance}`;
+    button1 = { text: "Submit", action: "post", url: `${host}/frame/delegate/arb/confirm?t=${timestamp}` };
+
+    return reply.view("./templates/delegate/arb/delegate2.liquid", {
+      button1,
+      description,
+      imageUrl,
+      pageUrl,
+      title
+    });
+  }
+
+  const delegateNames = await getNames(delegateAddress, provider);
+
+  if (delegateNames?.ens) {
+    delegateName = delegateNames?.ens;
+  } else if (delegateNames?.farcaster) {
+    delegateName = delegateNames?.farcaster;
+  } else {
+    delegateName = delegateAddress.slice(0, 6) + "..." + delegateAddress.slice(-4);
+  }
+
   title = "My Arbitrum Delegate";
   description = "Check who's my Arbitrum delegate and my ARB balance.";
-  imageUrl = `${host}/image/arb/delegate?t=${timestamp}&addr=${userAddress}`;
+  imageUrl = `${host}/image/arb/delegate?t=${timestamp}&user=${userName}&balance=${balance}&delegate=${delegateName}`;
+
+  // TODO: share link (warpcastShareUrl), add frame url at the end
+  let warpcastShareUrl = `https://warpcast.com/~/compose?text=My+Arbitrum+delegate+is+${delegateName}.+Check+yours+via+this+frame+made+by+%40tempetechie.eth+%26+%40tekr0x.eth+&embeds[]=${host}%2Fframe%2Fdelegate%2Farb%2Fshare%3Ft%3D${timestamp}%26user%3D${userName}%26balance%3D${balance}%26delegate%3D${delegateName}`;
+
+  if (delegateNames?.farcaster) {
+    warpcastShareUrl = `https://warpcast.com/~/compose?text=My+Arbitrum+delegate+is+%40${delegateName}.+Check+yours+via+this+frame+made+by+%40tempetechie.eth+%26+%40tekr0x.eth+&embeds[]=${host}%2Fframe%2Fdelegate%2Farb%2Fshare%3Ft%3D${timestamp}%26user%3D${userName}%26balance%3D${balance}%26delegate%3D${delegateName}`;
+  }
 
   // buttons
   button1 = { text: "Submit", action: "post", url: `${host}/frame/delegate/arb/confirm?t=${timestamp}` };
-  let button2 = { text: "Share", action: "link", url: `${host}/TODO` }; // TODO: add share link
+  let button2 = { text: "Share", action: "link", url: warpcastShareUrl }; // TODO: add share link
 
   return reply.view("./templates/delegate/arb/delegate.liquid", {
     button1,
@@ -92,3 +146,39 @@ export async function arbDelegateDelegate(request, reply) {
   });
 }
 
+export async function arbDelegateShare(request, reply) {
+  const timestamp = Math.floor(new Date().getTime() / 1000);
+  const { pageUrl, host } = getPageUrl(request);
+
+  let user = request.query.user;
+  let balance = request.query.balance;
+  let delegate = request.query.delegate;
+
+  if (!user) {
+    reply.status(400).send('Missing user address or name');
+    return;
+  }
+
+  if (!delegate) {
+    reply.status(400).send('Missing delegate address or name');
+    return;
+  }
+
+  if (!balance) {
+    reply.status(400).send('Missing balance');
+    return;
+  }
+
+  const title = "Share My Arbitrum Delegate";
+  const description = "Share your Arbitrum Delegate frame with your friends.";
+  const imageUrl = `${host}/image/arb/share?t=${timestamp}&user=${user}&balance=${balance}&delegate=${delegate}`;
+  const button1 = { text: "Check My Delegate", action: "post", url: `${host}/frame/delegate/arb/delegate?t=${timestamp}` };
+
+  return reply.view("./templates/delegate/arb/share.liquid", {
+    button1,
+    description,
+    imageUrl,
+    pageUrl,
+    title
+  });
+}
