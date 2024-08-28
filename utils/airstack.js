@@ -62,7 +62,7 @@ export async function getSocialsFromAddress(address) {
         }
       }
 
-      if (String(userAddress).toLowerCase() !== String(address).toLowerCase()) {
+      if (String(userAddress).toLowerCase() === String(address).toLowerCase()) {
         const profileHandle = socialsArray[i]?.profileHandle || null;
         const profileImage = socialsArray[i]?.profileImage || null;
         let ensName;
