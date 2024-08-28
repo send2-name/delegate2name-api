@@ -1,8 +1,54 @@
 import { ethers } from 'ethers';
 import { createCanvas, loadImage } from 'canvas';
+import confirmFrameSvg from '../../../utils/delegate/arb/confirmFrameSvg.js';
 import delegateFrameSvg from '../../../utils/delegate/arb/delegateFrameSvg.js';
 import noDelegateFrameSvg from '../../../utils/delegate/arb/noDelegateFrameSvg.js';
-import shareFrameSvg from '../../../utils/delegate/arb/shareFrameSvg.js';
+import shareMyDelegateFrameSvg from '../../../utils/delegate/arb/shareMyDelegateFrameSvg.js';
+
+export async function delegateArbConfirm(request, reply) {
+  const timestamp = Math.floor(new Date().getTime() / 1000);
+  let delegateEns = request.query.ens || request.query.ensname;
+  let delegateFarcaster = request.query.fc;
+  let delegateShortAddress = request.query.short;
+  let delegateName = delegateEns;
+
+  if (delegateEns == "undefined") {
+    delegateEns = "/";
+    delegateName = delegateFarcaster;
+  }
+
+  if (delegateFarcaster == "undefined") {
+    delegateFarcaster = "/";
+    delegateName = delegateShortAddress;
+  }
+
+  const svgImage = confirmFrameSvg(delegateShortAddress, delegateEns, delegateFarcaster);
+
+  try {
+    const width = 1910; // Canvas width
+    const height = 1000; // Canvas height
+
+    // Create a canvas
+    const canvas = createCanvas(width, height);
+    const ctx = canvas.getContext('2d');
+
+    // Load the SVG into the canvas
+    const img = await loadImage(`data:image/svg+xml;base64,${Buffer.from(svgImage).toString('base64')}`);
+    ctx.drawImage(img, 0, 0);
+
+    // Convert the canvas to a PNG buffer
+    const buffer = canvas.toBuffer('image/png');
+
+    // Set the response headers and send the image
+    reply
+      .type('image/png')
+      .header('Content-Disposition', `inline; filename="delegate-${String(delegateName).replace(".", "")}-${timestamp}.png"`)
+      .send(buffer);
+  } catch (error) {
+    console.error(error);
+    reply.status(500).send('Failed to generate image');
+  }
+}
 
 export async function delegateArbDelegate(request, reply) {
   const timestamp = Math.floor(new Date().getTime() / 1000);
@@ -147,7 +193,7 @@ export async function delegateArbShare(request, reply) {
     delegate = delegate.slice(0, 6) + "..." + delegate.slice(-4);
   }
 
-  const svgImage = shareFrameSvg(user, balance, delegate, userShortAddress, delegateShortAddress);
+  const svgImage = shareMyDelegateFrameSvg(user, balance, delegate, userShortAddress, delegateShortAddress);
 
   try {
     const width = 1910; // Canvas width

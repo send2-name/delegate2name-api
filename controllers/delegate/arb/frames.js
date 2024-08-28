@@ -1,37 +1,12 @@
-import { getSocialsFromAddress, getSocialsFromFid } from "../../../utils/airstack.js";
+import { getSocialsFromAddress, getSocialsFromEns, getSocialsFromFarcaster, getSocialsFromFid } from "../../../utils/airstack.js";
 import { getPageUrl } from "../../../utils/request.js";
 import { getArbBalance } from '../../../utils/balance.js';
-import { getArbitrumDelegate } from '../../../utils/dao.js';
+import { getArbAddress, getArbitrumDelegate } from '../../../utils/dao.js';
 import { getProvider } from '../../../utils/network.js';
 import { getAddress } from "../../../utils/sanitize.js";
 import { validateFramesMessage } from "../../../utils/validate.js";
 
 const chainId = 42161;
-
-export function arbDelegateStart1(request, reply) {
-  const timestamp = Math.floor(new Date().getTime() / 1000);
-  const { pageUrl, host } = getPageUrl(request);
-
-  let title = "Arbitrum Delegate Frame";
-  let description = "Check or set your Arbitrum Delegate.";
-  let imageUrl = `${host}/static/img/delegate/arb/arb-start-1.png`;
-
-  // buttons
-  let button1 = { text: "Check My Delegate", action: "post", url: `${host}/frame/delegate/arb/delegate?t=${timestamp}` };
-
-  reply.view("./templates/delegate/arb/start-1.liquid", {
-    button1,
-    description,
-    imageUrl,
-    pageUrl,
-    title
-  });
-
-  // verify the user's signature via airstack API if signature is present
-  if (request?.body?.untrustedData && request?.body?.trustedData) {
-    validateFramesMessage(request.body.untrustedData, request.body.trustedData)
-  }
-}
 
 export async function arbDelegateDelegate(request, reply) {
   // verify the user's signature via airstack API if signature is present
@@ -187,8 +162,8 @@ export async function arbDelegateDelegate(request, reply) {
   }
 
   // buttons
-  button1 = { text: "Submit", action: "post", url: `${host}/frame/delegate/arb/confirm?t=${timestamp}` };
-  let button2 = { text: "Share", action: "link", url: warpcastShareUrl }; // TODO: add share link
+  button1 = { text: "Submit", action: "post", url: `${host}/frame/delegate/arb/confirm?t=${timestamp}&current-delegate-address=${delegateAddress}` };
+  let button2 = { text: "Share", action: "link", url: warpcastShareUrl };
 
   return reply.view("./templates/delegate/arb/delegate.liquid", {
     button1,
@@ -200,7 +175,209 @@ export async function arbDelegateDelegate(request, reply) {
   });
 }
 
-export async function arbDelegateShare(request, reply) {
+export async function arbDelegateConfirm(request, reply) {
+  // verify the user's signature via airstack API if signature is present
+  if (request?.body?.untrustedData && request?.body?.trustedData) {
+    validateFramesMessage(request.body.untrustedData, request.body.trustedData)
+  }
+
+  const timestamp = Math.floor(new Date().getTime() / 1000);
+  const { pageUrl, host } = getPageUrl(request);
+
+  const currentDelegateAddress = getAddress(request.query['current-delegate-address']);
+
+  let newDelegate = request.query?.delegate;
+
+  if (!newDelegate) {
+    newDelegate = request?.body?.untrustedData?.inputText;
+  }
+
+  let title;
+  let description;
+  let imageUrl;
+  let button1;
+
+  // if delegate address or name is missing, show an error frame
+  if (!newDelegate) {
+    title = "Invalid or missing delegate";
+    description = "Please enter a delegate address or FC/ENS name.";
+    imageUrl = `${host}/static/img/delegate/arb/arb-delegate-error.png`;
+    button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
+
+    return reply.view("./templates/delegate/arb/error-delegate.liquid", {
+      button1,
+      description,
+      imageUrl,
+      pageUrl,
+      title
+    });
+  }
+
+  // delegate data
+  let socials;
+  let delegateAddress;
+  let delegateShortAddress;
+  let delegateEns;
+  let delegateFarcaster;
+
+  // get socials
+  if (getAddress(newDelegate)) {
+    // if newDelegate is an address, call getSocialsFromAddress
+    socials = await getSocialsFromAddress(newDelegate);
+    delegateAddress = getAddress(newDelegate);
+    delegateShortAddress = delegateAddress.slice(0, 6) + "..." + delegateAddress.slice(-4);
+    delegateEns = socials?.ens;
+    delegateFarcaster = socials?.farcaster;
+  } else if (newDelegate.endsWith(".eth")) {
+    // if newDelegate is an ENS name, call getSocialsFromEns
+    socials = await getSocialsFromEns(newDelegate);
+    delegateAddress = getAddress(socials?.userAddress);
+    delegateShortAddress = delegateAddress.slice(0, 6) + "..." + delegateAddress.slice(-4);
+    delegateEns = newDelegate;
+    delegateFarcaster = socials?.farcaster;
+  } else {
+    // if newDelegate is an FC name, call getSocialsFromFarcaster
+    socials = await getSocialsFromFarcaster(newDelegate);
+    console.log(socials);
+
+    if (socials?.userAddress) {
+      delegateAddress = getAddress(socials?.userAddress);
+      delegateShortAddress = delegateAddress.slice(0, 6) + "..." + delegateAddress.slice(-4);
+      delegateEns = socials?.ens;
+      delegateFarcaster = newDelegate;
+    }
+  }
+
+  // if no delegateAddress, show the "delegate not found" frame
+  if (!delegateAddress) {
+    title = "Delegate not found";
+    description = "Please provide a valid delegate address or FC/ENS name.";
+    imageUrl = `${host}/static/img/delegate/arb/arb-delegate-not-found.png`;
+    button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
+
+    return reply.view("./templates/delegate/arb/error-delegate.liquid", {
+      button1,
+      description,
+      imageUrl,
+      pageUrl,
+      title
+    });
+  }
+
+  // if delegate address is the same as the current delegate, show the "same delegate" frame
+  if (String(delegateAddress).toLowerCase() === String(currentDelegateAddress).toLowerCase()) {
+    title = "Same Delegate";
+    description = "You are already delegating to this address.";
+    imageUrl = `${host}/static/img/delegate/arb/arb-delegate-already-set.png`;
+    button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
+
+    return reply.view("./templates/delegate/arb/error-delegate.liquid", {
+      button1,
+      description,
+      imageUrl,
+      pageUrl,
+      title
+    });
+  }
+
+  // if delegate is set and is different from the current delegate, proceed to the confirmation frame
+  button1 = { 
+    text: "Confirm", action: "tx", 
+    target: `${host}/frame/delegate/arb/tx-data?delegate=${delegateAddress}`, 
+    url: `${host}/frame/delegate/arb/tx-callback?delegate=${delegateAddress}` 
+  };
+  
+  const button2 = { text: "Back", action: "post", url: `${host}/frame/delegate/arb/start-1` };
+
+  const delegateName = `@${delegateFarcaster}` || delegateEns || delegateShortAddress;
+  const warpcastShareUrl = `https://warpcast.com/~/compose?text=Consider+setting+${delegateName}+as+your+Arbitrum+delegate.+Share+this+frame+with+your+friends.+&embeds[]=${host}%2Fframe%2Fdelegate%2Farb%2Fconfirm%3Ft%3D${timestamp}%26delegate%3D${delegateAddress}`;
+  const button3 = { text: "Share", action: "link", url: warpcastShareUrl };
+
+  title = `Set ${delegateName} as your Arbitrum Delegate`;
+  description = `Consider setting ${delegateName} as your Arbitrum delegate. Share this frame with your friends.`;
+  imageUrl = `${host}/image/arb/confirm?t=${timestamp}&ens=${delegateEns}&fc=${delegateFarcaster}&short=${delegateShortAddress}`;
+
+  return reply.view("./templates/delegate/arb/confirm.liquid", {
+    button1,
+    button2,
+    button3,
+    description,
+    imageUrl,
+    pageUrl,
+    title
+  });
+}
+
+export function arbDelegateStart1(request, reply) {
+  const timestamp = Math.floor(new Date().getTime() / 1000);
+  const { pageUrl, host } = getPageUrl(request);
+
+  let title = "Arbitrum Delegate Frame";
+  let description = "Check or set your Arbitrum Delegate.";
+  let imageUrl = `${host}/static/img/delegate/arb/arb-start-1.png`;
+
+  // buttons
+  let button1 = { text: "Check My Delegate", action: "post", url: `${host}/frame/delegate/arb/delegate?t=${timestamp}` };
+
+  reply.view("./templates/delegate/arb/start-1.liquid", {
+    button1,
+    description,
+    imageUrl,
+    pageUrl,
+    title
+  });
+
+  // verify the user's signature via airstack API if signature is present
+  if (request?.body?.untrustedData && request?.body?.trustedData) {
+    validateFramesMessage(request.body.untrustedData, request.body.trustedData)
+  }
+}
+
+export function arbDelegateTxCallback(request, reply) {}
+
+export function arbDelegateTxData(request, reply) {
+  // verify the user's signature via airstack API if signature is present
+  if (request?.body?.untrustedData && request?.body?.trustedData) {
+    validateFramesMessage(request.body.untrustedData, request.body.trustedData)
+  }
+
+  const delegateAddress = getAddress(request.query.delegate);
+
+  if (!delegateAddress) {
+    reply.status(400).send('Missing delegate address');
+    return;
+  }
+
+  const arbAddress = getArbAddress();
+
+  const abi = [
+    "function delegate(address delegatee) public",
+  ];
+
+  const intrfc = new ethers.utils.Interface(abi);
+
+  const txData = intrfc.encodeFunctionData("delegate", [delegateAddress]);
+
+  const tx = {
+    method: "eth_sendTransaction",
+    chainId: `eip155:${chainId}`,
+    params: {
+      abi: abi,
+      to: arbAddress,
+      data: txData,
+      value: "0",
+    },
+  };
+
+  return reply.send(tx);
+}
+
+export async function arbMyDelegateShare(request, reply) {
+  // verify the user's signature via airstack API if signature is present
+  if (request?.body?.untrustedData && request?.body?.trustedData) {
+    validateFramesMessage(request.body.untrustedData, request.body.trustedData)
+  }
+
   const timestamp = Math.floor(new Date().getTime() / 1000);
   const { pageUrl, host } = getPageUrl(request);
 

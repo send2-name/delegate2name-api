@@ -8,12 +8,16 @@ import fastifyView from "@fastify/view";
 import { index } from './controllers/public.js';
 
 import { 
-  arbDelegateStart1, 
+  arbDelegateConfirm,
   arbDelegateDelegate,
-  arbDelegateShare,
+  arbMyDelegateShare,
+  arbDelegateStart1, 
+  arbDelegateTxCallback,
+  arbDelegateTxData,
 } from './controllers/delegate/arb/frames.js';
 
 import { 
+  delegateArbConfirm, 
   delegateArbDelegate, 
   delegateArbNoDelegate,
   delegateArbShare,
@@ -58,13 +62,18 @@ app.addHook('preHandler', (request, reply, done) => {
 app.get('/', index);
 
 // ARBITRUM DELEGATE FRAMES
+app.get('/frame/delegate/arb/confirm', arbDelegateConfirm);
+app.post('/frame/delegate/arb/confirm', arbDelegateConfirm);
+app.post('/frame/delegate/arb/delegate', arbDelegateDelegate);
+app.get('/frame/delegate/arb/delegate', arbDelegateDelegate);
+app.get('/frame/delegate/arb/share', arbMyDelegateShare);
 app.get('/frame/delegate/arb/start-1', arbDelegateStart1);
 app.post('/frame/delegate/arb/start-1', arbDelegateStart1);
-app.get('/frame/delegate/arb/delegate', arbDelegateDelegate);
-app.post('/frame/delegate/arb/delegate', arbDelegateDelegate);
-app.get('/frame/delegate/arb/share', arbDelegateShare);
+app.post('/frame/delegate/arb/tx-callback', arbDelegateTxCallback);
+app.post('/frame/delegate/arb/tx-data', arbDelegateTxData);
 
 // ARBITRUM DELEGATE IMAGES
+app.get('/image/arb/confirm', delegateArbConfirm);
 app.get('/image/arb/delegate', delegateArbDelegate);
 app.get('/image/arb/no-delegate', delegateArbNoDelegate);
 app.get('/image/arb/share', delegateArbShare);
