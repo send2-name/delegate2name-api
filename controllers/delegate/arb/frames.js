@@ -288,7 +288,7 @@ export async function arbDelegateConfirm(request, reply) {
   
   const button2 = { text: "Back", action: "post", url: `${host}/frame/delegate/arb/start-1` };
   
-  const warpcastShareUrl = `https://warpcast.com/~/compose?text=Consider+setting+${delegateName}+as+your+Arbitrum+delegate.+Share+this+frame+with+your+friends.+&embeds[]=${host}%2Fframe%2Fdelegate%2Farb%2Fconfirm%3Ft%3D${timestamp}%26delegate%3D${delegateAddress}`;
+  const warpcastShareUrl = `https://warpcast.com/~/compose?text=Consider+setting+${delegateName}+as+your+Arbitrum+delegate.+Share+this+frame+with+your+friends.+Frame+made+by+%40tempetechie.eth+%26+%40tekr0x.eth+&embeds[]=${host}%2Fframe%2Fdelegate%2Farb%2Fconfirm%3Ft%3D${timestamp}%26delegate%3D${delegateAddress}`;
   const button3 = { text: "Share", action: "link", url: warpcastShareUrl };
 
   title = `Set ${delegateName} as your Arbitrum Delegate`;
@@ -379,7 +379,7 @@ export async function arbDelegateTxCallback(request, reply) {
       title = "Transaction Successful";
       description = "Your Arbitrum delegate has been set successfully.";
 
-      const warpcastShareUrl = `https://warpcast.com/~/compose?text=I+have+set+${delegateName}+as+my+Arbitrum+delegate.+Consider+${delegateName}+as+delegate+too%2C+via+this+frame+made+by+%40tempetechie.eth+%26+%40tekr0x.eth+&embeds[]=${host}%2Fframe%2Fdelegate%2Farb%2Fconfirm%3Ft%3D${timestamp}%26delegate%3D${delegateName}`;
+      const warpcastShareUrl = `https://warpcast.com/~/compose?text=I+have+set+${delegateName}+as+my+Arbitrum+delegate.+Consider+${delegateName}+as+your+delegate+too%2C+via+this+frame+made+by+%40tempetechie.eth+%26+%40tekr0x.eth+&embeds[]=${host}%2Fframe%2Fdelegate%2Farb%2Fconfirm%3Ft%3D${timestamp}%26delegate%3D${String(delegateName).replace("@", "")}`;
       const button2 = { text: "Share", action: "link", url: warpcastShareUrl };
       const button3 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
 
