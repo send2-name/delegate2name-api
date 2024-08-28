@@ -59,7 +59,7 @@ export async function arbDelegateDelegate(request, reply) {
         userAvatar = fidQuery?.avatar;
 
         if (userFarcaster) {
-          userName = `@${userFarcaster}`;
+          userName = `@${String(userFarcaster).replace("@", "")}`;
         } else if (userEns) {
           userName = userEns;
         } else {
@@ -138,7 +138,7 @@ export async function arbDelegateDelegate(request, reply) {
     delegateFarcaster = delegateNames?.farcaster;
 
     if (delegateNames?.farcaster) {
-      delegateName = `@${delegateNames?.farcaster}`;
+      delegateName = `@${String(delegateNames?.farcaster).replace("@", "")}`;
     } else if (delegateNames?.ens) {
       delegateName = delegateNames?.ens;
     } else {
@@ -278,7 +278,7 @@ export async function arbDelegateConfirm(request, reply) {
   }
 
   // if delegate is set and is different from the current delegate, proceed to the confirmation frame
-  const delegateName = `@${delegateFarcaster}` || delegateEns || delegateShortAddress;
+  const delegateName = `@${String(delegateFarcaster).replace("@", "")}` || delegateEns || delegateShortAddress;
 
   button1 = { 
     text: "Confirm", action: "tx", 
