@@ -23,7 +23,8 @@
     "dotenv": "^16.0.3",
     "ethers": "^5.7.2",
     "fastify": "^4.21.0",
-    "liquidjs": "^10.10.2"
+    "liquidjs": "^10.10.2",
+    "moralis": "^2.27.2"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
