@@ -9,6 +9,8 @@ export async function delegateArbDelegate(request, reply) {
   let user = request.query.user;
   let delegate = request.query.delegate;
   let balance = request.query.balance;
+  let userShortAddress = request.query.ushort;
+  let delegateShortAddress = request.query.dshort;
 
   if (!user) {
     reply.status(400).send('Missing user address or name');
@@ -35,7 +37,7 @@ export async function delegateArbDelegate(request, reply) {
     delegate = delegate.slice(0, 6) + "..." + delegate.slice(-4);
   }
 
-  const svgImage = delegateFrameSvg(user, balance, delegate);
+  const svgImage = delegateFrameSvg(user, balance, delegate, userShortAddress, delegateShortAddress);
 
   try {
     const width = 1910; // Canvas width
@@ -67,6 +69,7 @@ export async function delegateArbNoDelegate(request, reply) {
   const timestamp = Math.floor(new Date().getTime() / 1000);
   let user = request.query.user;
   let balance = request.query.balance;
+  let userShortAddress = request.query.ushort;
 
   if (!user) {
     reply.status(400).send('Missing user address or name');
@@ -83,7 +86,7 @@ export async function delegateArbNoDelegate(request, reply) {
     user = user.slice(0, 6) + "..." + user.slice(-4);
   }
 
-  const svgImage = noDelegateFrameSvg(user, balance);
+  const svgImage = noDelegateFrameSvg(user, balance, userShortAddress);
 
   try {
     const width = 1910; // Canvas width
@@ -103,7 +106,7 @@ export async function delegateArbNoDelegate(request, reply) {
     // Set the response headers and send the image
     reply
       .type('image/png')
-      .header('Content-Disposition', `inline; filename="delegate2-${user}-${timestamp}.png"`)
+      .header('Content-Disposition', `inline; filename="delegate2-${String(user).replace("@", "")}-${timestamp}.png"`)
       .send(buffer);
   } catch (error) {
     console.error(error);
@@ -116,6 +119,8 @@ export async function delegateArbShare(request, reply) {
   let user = request.query.user;
   let delegate = request.query.delegate;
   let balance = request.query.balance;
+  let userShortAddress = request.query.ushort;
+  let delegateShortAddress = request.query.dshort;
 
   if (!user) {
     reply.status(400).send('Missing user address or name');
@@ -142,7 +147,7 @@ export async function delegateArbShare(request, reply) {
     delegate = delegate.slice(0, 6) + "..." + delegate.slice(-4);
   }
 
-  const svgImage = shareFrameSvg(user, balance, delegate);
+  const svgImage = shareFrameSvg(user, balance, delegate, userShortAddress, delegateShortAddress);
 
   try {
     const width = 1910; // Canvas width

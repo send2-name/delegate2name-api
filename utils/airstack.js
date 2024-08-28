@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import { ethers } from 'ethers'; 
 import { fetchQuery, init } from "@airstack/node";
 import { getEnvVar } from './datastore.js';
+import { getNames } from './names.js';
 
 dotenv.config(); // Load environment variables from .env file
 
@@ -82,8 +83,22 @@ export async function getSocialsFromAddress(address) {
     }
   } catch (e) {
     console.log(e);
-    return { success: false, message: e };
+    return { success: false, message: e, userAddress: address, farcaster: null, avatar: null, ens: null };
   }
+
+  console.log("No socials found for this address:", address);
+
+  console.log("Fetching socials from ENSdata API...");
+
+  const namesQuery = await getNames(address); 
+
+  return { 
+    success: true, 
+    userAddress: address, 
+    farcaster: namesQuery?.farcaster, 
+    avatar: namesQuery?.avatar, 
+    ens: namesQuery?.ens 
+  };
 }
 
 export async function getSocialsFromFid(fid) {
