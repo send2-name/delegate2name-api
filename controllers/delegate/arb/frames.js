@@ -1,3 +1,4 @@
+import { ethers } from "ethers";
 import { getSocialsFromAddress, getSocialsFromEns, getSocialsFromFarcaster, getSocialsFromFid } from "../../../utils/airstack.js";
 import { getPageUrl } from "../../../utils/request.js";
 import { getArbBalance } from '../../../utils/balance.js';
@@ -137,7 +138,7 @@ export async function arbDelegateDelegate(request, reply) {
     delegateFarcaster = delegateNames?.farcaster;
 
     if (delegateNames?.farcaster) {
-      delegateName = `@$${delegateNames?.farcaster}`;
+      delegateName = `@${delegateNames?.farcaster}`;
     } else if (delegateNames?.ens) {
       delegateName = delegateNames?.ens;
     } else {
@@ -156,10 +157,6 @@ export async function arbDelegateDelegate(request, reply) {
   }
 
   let warpcastShareUrl = `https://warpcast.com/~/compose?text=My+Arbitrum+delegate+is+${delegateNameCast}.+Check+yours+via+this+frame+made+by+%40tempetechie.eth+%26+%40tekr0x.eth+&embeds[]=${host}%2Fframe%2Fdelegate%2Farb%2Fshare%3Ft%3D${timestamp}%26user%3D${userName}%26ushort%3D${userShortAddress}%26balance%3D${balance}%26delegate%3D${delegateName}%26dshort%3D${delegateShortAddress}`;
-
-  if (delegateFarcaster) {
-    warpcastShareUrl = `https://warpcast.com/~/compose?text=My+Arbitrum+delegate+is+%40${delegateNameCast}.+Check+yours+via+this+frame+made+by+%40tempetechie.eth+%26+%40tekr0x.eth+&embeds[]=${host}%2Fframe%2Fdelegate%2Farb%2Fshare%3Ft%3D${timestamp}%26user%3D${userName}%26ushort%3D${userShortAddress}%26balance%3D${balance}%26delegate%3D${delegateName}%26dshort%3D${delegateShortAddress}`;
-  }
 
   // buttons
   button1 = { text: "Submit", action: "post", url: `${host}/frame/delegate/arb/confirm?t=${timestamp}&current-delegate-address=${delegateAddress}` };
