@@ -4,6 +4,7 @@ import confirmFrameSvg from '../../../utils/delegate/arb/confirmFrameSvg.js';
 import delegateFrameSvg from '../../../utils/delegate/arb/delegateFrameSvg.js';
 import noDelegateFrameSvg from '../../../utils/delegate/arb/noDelegateFrameSvg.js';
 import shareMyDelegateFrameSvg from '../../../utils/delegate/arb/shareMyDelegateFrameSvg.js';
+import successFrameSvg from '../../../utils/delegate/arb/successFrameSvg.js';
 
 export async function delegateArbConfirm(request, reply) {
   const timestamp = Math.floor(new Date().getTime() / 1000);
@@ -214,6 +215,43 @@ export async function delegateArbShare(request, reply) {
     reply
       .type('image/png')
       .header('Content-Disposition', `inline; filename="share-${user}-${timestamp}.png"`)
+      .send(buffer);
+  } catch (error) {
+    console.error(error);
+    reply.status(500).send('Failed to generate image');
+  }
+}
+
+export async function delegateArbSuccess(request, reply) {
+  const timestamp = Math.floor(new Date().getTime() / 1000);
+  let delegateName = request.query.delegate;
+
+  if (!delegateName) {
+    reply.status(400).send('Missing delegate address or name');
+    return;
+  }
+
+  const svgImage = successFrameSvg(delegateName);
+
+  try {
+    const width = 1910; // Canvas width
+    const height = 1000; // Canvas height
+
+    // Create a canvas
+    const canvas = createCanvas(width, height);
+    const ctx = canvas.getContext('2d');
+
+    // Load the SVG into the canvas
+    const img = await loadImage(`data:image/svg+xml;base64,${Buffer.from(svgImage).toString('base64')}`);
+    ctx.drawImage(img, 0, 0);
+
+    // Convert the canvas to a PNG buffer
+    const buffer = canvas.toBuffer('image/png');
+
+    // Set the response headers and send the image
+    reply
+      .type('image/png')
+      .header('Content-Disposition', `inline; filename="share-${String(delegateName).replace(".", "")}-${timestamp}.png"`)
       .send(buffer);
   } catch (error) {
     console.error(error);

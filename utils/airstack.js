@@ -68,7 +68,7 @@ export async function getSocialsFromAddress(address) {
         let ensName;
         const associatedAddresses = socialsArray[i]?.userAssociatedAddressDetails || [];
 
-        for (let k = 0; j < associatedAddresses.length; k++) {
+        for (let k = 0; k < associatedAddresses.length; k++) {
           if (String(associatedAddresses[k].primaryDomain?.resolvedAddress).toLowerCase() === String(userAddress).toLowerCase()) {
             ensName = associatedAddresses[k].primaryDomain?.name;
             break;

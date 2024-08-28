@@ -21,6 +21,7 @@ import {
   delegateArbDelegate, 
   delegateArbNoDelegate,
   delegateArbShare,
+  delegateArbSuccess,
 } from './controllers/delegate/arb/images.js';
 
 const app = Fastify({
@@ -77,6 +78,7 @@ app.get('/image/arb/confirm', delegateArbConfirm);
 app.get('/image/arb/delegate', delegateArbDelegate);
 app.get('/image/arb/no-delegate', delegateArbNoDelegate);
 app.get('/image/arb/share', delegateArbShare);
+app.get('/image/arb/success', delegateArbSuccess);
 
 // run the server
 app.listen({ port: process.env.PORT || 3000 }, function (err, address) {

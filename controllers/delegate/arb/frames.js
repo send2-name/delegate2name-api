@@ -281,15 +281,16 @@ export async function arbDelegateConfirm(request, reply) {
   }
 
   // if delegate is set and is different from the current delegate, proceed to the confirmation frame
+  const delegateName = `@${delegateFarcaster}` || delegateEns || delegateShortAddress;
+
   button1 = { 
     text: "Confirm", action: "tx", 
     target: `${host}/frame/delegate/arb/tx-data?delegate=${delegateAddress}`, 
-    url: `${host}/frame/delegate/arb/tx-callback?delegate=${delegateAddress}` 
+    url: `${host}/frame/delegate/arb/tx-callback?delegate=${delegateAddress}&dname=${delegateName}` 
   };
   
   const button2 = { text: "Back", action: "post", url: `${host}/frame/delegate/arb/start-1` };
-
-  const delegateName = `@${delegateFarcaster}` || delegateEns || delegateShortAddress;
+  
   const warpcastShareUrl = `https://warpcast.com/~/compose?text=Consider+setting+${delegateName}+as+your+Arbitrum+delegate.+Share+this+frame+with+your+friends.+&embeds[]=${host}%2Fframe%2Fdelegate%2Farb%2Fconfirm%3Ft%3D${timestamp}%26delegate%3D${delegateAddress}`;
   const button3 = { text: "Share", action: "link", url: warpcastShareUrl };
 
@@ -333,7 +334,103 @@ export function arbDelegateStart1(request, reply) {
   }
 }
 
-export function arbDelegateTxCallback(request, reply) {}
+export async function arbDelegateTxCallback(request, reply) {
+  // verify the user's signature via airstack API if signature is present
+  if (request?.body?.untrustedData && request?.body?.trustedData) {
+    validateFramesMessage(request.body.untrustedData, request.body.trustedData)
+  }
+
+  const timestamp = Math.floor(new Date().getTime() / 1000);
+  const { pageUrl, host } = getPageUrl(request);
+  const delegateAddress = getAddress(request.query.delegate);
+  const delegateName = request.query.dname;
+  let txHash = request?.body?.untrustedData?.transactionId;
+
+  if (!txHash) {
+    txHash = request.query.tx;
+  }
+
+  const provider = getProvider(chainId);
+  const blockExplorerUrl = "https://arbiscan.io/tx/" + txHash;
+
+  const txReceipt = await provider.getTransactionReceipt(txHash);
+  let title;
+  let description;
+  let button1;
+  let imageUrl;
+
+  if (!txReceipt) {
+    // tx is still pending
+    button1 = { text: "Check Again", action: "post", url: `${host}/frame/delegate/arb/tx-callback?delegate=${delegateAddress}&dname=${delegateName}&tx=${txHash}` };
+    title = "Transaction Pending";
+    description = "Your transaction is being processed. Please check again later.";
+    imageUrl = `${host}/static/img/delegate/arb/arb-callback-wait.gif`;
+
+    return reply.view("./templates/delegate/arb/pending.liquid", {
+      button1,
+      description,
+      imageUrl,
+      pageUrl,
+      title
+    });
+  } else {
+    button1 = { text: "Tx Info", action: "link", url: blockExplorerUrl };
+
+    if (txReceipt?.status === 1) {
+      // successful tx
+      imageUrl = `${host}/image/arb/success?t=${timestamp}&delegate=${delegateName}`;
+      title = "Transaction Successful";
+      description = "Your Arbitrum delegate has been set successfully.";
+
+      const warpcastShareUrl = `https://warpcast.com/~/compose?text=I+have+set+${delegateName}+as+my+Arbitrum+delegate.+Consider+${delegateName}+as+delegate+too%2C+via+this+frame+made+by+%40tempetechie.eth+%26+%40tekr0x.eth+&embeds[]=${host}%2Fframe%2Fdelegate%2Farb%2Fconfirm%3Ft%3D${timestamp}%26delegate%3D${delegateName}`;
+      const button2 = { text: "Share", action: "link", url: warpcastShareUrl };
+      const button3 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
+
+      return reply.view("./templates/delegate/arb/success.liquid", {
+        button1,
+        button2,
+        button3,
+        description,
+        imageUrl,
+        pageUrl,
+        title
+      });
+    } else if (txReceipt?.status === 0) {
+      // failed tx
+      imageUrl = `${host}/static/img/delegate/arb/arb-delegate-fail.png`;
+      title = "Transaction Failed";
+      description = "Your Arbitrum delegate transaction has failed.";
+
+      const button2 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
+
+      return reply.view("./templates/delegate/arb/fail.liquid", {
+        button1,
+        button2,
+        description,
+        imageUrl,
+        pageUrl,
+        title
+      });
+    } else {
+      // unknown tx status
+      imageUrl = `${host}/static/img/delegate/arb/arb-delegate-unknown.png`;
+      title = "Transaction Status Unknown";
+      description = "Your Arbitrum delegate transaction status is unknown.";
+
+      const button2 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
+
+      return reply.view("./templates/delegate/arb/fail.liquid", {
+        button1,
+        button2,
+        description,
+        imageUrl,
+        pageUrl,
+        title
+      });
+    }
+  }
+
+}
 
 export function arbDelegateTxData(request, reply) {
   // verify the user's signature via airstack API if signature is present
