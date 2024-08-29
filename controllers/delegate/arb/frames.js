@@ -210,6 +210,9 @@ export async function arbDelegateConfirm(request, reply) {
     });
   }
 
+  // trim newDelegate, no leading or trailing spaces allowed
+  newDelegate = String(newDelegate).trim();
+
   // delegate data
   let socials;
   let delegateAddress;
