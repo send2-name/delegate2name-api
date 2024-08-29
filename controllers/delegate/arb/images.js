@@ -64,24 +64,13 @@ export async function delegateArbDelegate(request, reply) {
     return;
   }
 
-  if (!delegate) {
-    reply.status(400).send('Missing delegate address or name');
-    return;
-  }
-
-  if (!balance) {
-    reply.status(400).send('Missing balance');
-    return;
+  if (delegate == "undefined" || delegate == "null") {
+    delegate = "";
   }
 
   // if no ENS name for user, use short address
   if (ethers.utils.isAddress(user)) {
     user = user.slice(0, 6) + "..." + user.slice(-4);
-  }
-
-  // if no ENS name for delegate, use short address
-  if (ethers.utils.isAddress(delegate)) {
-    delegate = delegate.slice(0, 6) + "..." + delegate.slice(-4);
   }
 
   const svgImage = delegateFrameSvg(user, balance, delegate, userShortAddress, delegateShortAddress);
@@ -174,24 +163,13 @@ export async function delegateArbShare(request, reply) {
     return;
   }
 
-  if (!delegate) {
-    reply.status(400).send('Missing delegate address or name');
-    return;
-  }
-
-  if (!balance) {
-    reply.status(400).send('Missing balance');
-    return;
+  if (delegate == "undefined" || delegate == "null") {
+    delegate = "";
   }
 
   // if no ENS name for user, use short address
   if (ethers.utils.isAddress(user)) {
     user = user.slice(0, 6) + "..." + user.slice(-4);
-  }
-
-  // if no ENS name for delegate, use short address
-  if (ethers.utils.isAddress(delegate)) {
-    delegate = delegate.slice(0, 6) + "..." + delegate.slice(-4);
   }
 
   const svgImage = shareMyDelegateFrameSvg(user, balance, delegate, userShortAddress, delegateShortAddress);
