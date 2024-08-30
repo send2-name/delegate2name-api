@@ -280,8 +280,16 @@ export async function arbDelegateConfirm(request, reply) {
     });
   }
 
+  console.log("delegateAddress", delegateAddress);
+  console.log("delegateEns", delegateEns);
+  console.log("delegateFarcaster", delegateFarcaster);
+  console.log("delegateShortAddress", delegateShortAddress);
+
   // if delegate is set and is different from the current delegate, proceed to the confirmation frame
-  delegateFarcaster = String(delegateFarcaster).replace("@", "");
+  if (delegateFarcaster) {
+    delegateFarcaster = String(delegateFarcaster).replace("@", "");
+  }
+
   let delegateName = delegateFarcaster || delegateEns || delegateShortAddress;
 
   if (delegateName === delegateFarcaster) {
