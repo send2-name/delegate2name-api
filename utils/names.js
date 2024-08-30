@@ -4,6 +4,20 @@ import Moralis from 'moralis';
 import { getEnvVar } from './datastore.js';
 import { getProvider } from './network.js';
 
+dotenv.config(); // Load environment variables from .env file
+
+// get moralis api key
+let apiKey;
+if (process.env.MYLOCALHOST) {
+  apiKey = process.env.MORALIS_API_KEY;
+} else {
+  apiKey = await getEnvVar("moralisApiKey");
+}
+
+await Moralis.start({
+  apiKey: apiKey
+});
+
 export async function getSocialsByAddress(address) {
   let apiError = false;
   let avatar = null;
@@ -158,21 +172,7 @@ export async function getEnsFromEnsData(address) {
 }
 
 export async function getEnsFromMoralis(address) {
-  dotenv.config(); // Load environment variables from .env file
-
-  // get moralis api key
-  let apiKey;
-  if (process.env.MYLOCALHOST) {
-    apiKey = process.env.MORALIS_API_KEY;
-  } else {
-    apiKey = await getEnvVar("moralisApiKey");
-  }
-
   try {
-    await Moralis.start({
-      apiKey: apiKey
-    });
-  
     const response = await Moralis.EvmApi.resolve.resolveAddress({
       "address": address
     });
@@ -221,21 +221,7 @@ export async function getAddressFromEnsData(ens) {
 }
 
 export async function getAddressFromNameMoralis(ens) {
-  dotenv.config(); // Load environment variables from .env file
-
-  // get moralis api key
-  let apiKey;
-  if (process.env.MYLOCALHOST) {
-    apiKey = process.env.MORALIS_API_KEY;
-  } else {
-    apiKey = await getEnvVar("moralisApiKey");
-  }
-
   try {
-    await Moralis.start({
-      apiKey: apiKey
-    });
-  
     const response = await Moralis.EvmApi.resolve.resolveENSDomain({
       "domain": ens
     });

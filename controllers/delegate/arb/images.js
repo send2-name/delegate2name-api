@@ -13,12 +13,12 @@ export async function delegateArbConfirm(request, reply) {
   let delegateShortAddress = request.query.short;
   let delegateName = delegateEns;
 
-  if (delegateEns == "undefined") {
+  if (delegateEns == "undefined" || delegateEns == "null" || !delegateEns) {
     delegateEns = "/";
     delegateName = delegateFarcaster;
   }
 
-  if (delegateFarcaster == "undefined") {
+  if (delegateFarcaster == "undefined" || delegateFarcaster == "null" || !delegateFarcaster) {
     delegateFarcaster = "/";
     delegateName = delegateShortAddress;
   }
