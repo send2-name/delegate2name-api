@@ -281,7 +281,12 @@ export async function arbDelegateConfirm(request, reply) {
   }
 
   // if delegate is set and is different from the current delegate, proceed to the confirmation frame
-  const delegateName = `@${String(delegateFarcaster).replace("@", "")}` || delegateEns || delegateShortAddress;
+  delegateFarcaster = String(delegateFarcaster).replace("@", "");
+  let delegateName = delegateFarcaster || delegateEns || delegateShortAddress;
+
+  if (delegateName === delegateFarcaster) {
+    delegateName = `@${delegateName}`;
+  }
 
   button1 = { 
     text: "Confirm", action: "tx", 
