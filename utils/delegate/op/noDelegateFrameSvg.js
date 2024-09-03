@@ -10,11 +10,11 @@ export default function(user, balance, userShortAddress) {
       </text>
 
       <text x="50%" y="50%" dominant-baseline="middle" fill="white" text-anchor="middle" font-size="45px" font-family="sans-serif">
-        My ARB balance: ${balance} ARB
+        My OP balance: ${balance} OP
       </text>
 
       <text x="50%" y="60%" dominant-baseline="middle" fill="white" text-anchor="middle" font-size="45px" font-family="sans-serif">
-        My Arbitrum delegate: No delegate set
+        My Optimism delegate: No delegate set
       </text>
     </svg>
   `;
