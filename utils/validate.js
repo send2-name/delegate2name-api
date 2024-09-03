@@ -36,7 +36,8 @@ export async function validateFramesMessage(untrustedData, trustedData) {
           "Content-Type": "application/octet-stream",
           "x-airstack-hubs": apiKey,
         },
-      }
+      },
+      {timeout: 2500}
     );
 
     //console.log('Validate Message Response:', validateMessageResponse.data);
