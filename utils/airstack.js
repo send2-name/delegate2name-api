@@ -264,7 +264,7 @@ export async function getSocialsFromFid(fid) {
   try {
     const result = await fetchQuery(query);
 
-    console.log(result);
+    //console.log(result);
 
     const error = result?.error || null;
 

@@ -10,8 +10,15 @@ const chains = [
     chainId: 1,
     name: 'Ethereum',
     currency: 'ETH',
-    rpcs: ['https://arb1.arbitrum.io/rpc'],
+    rpcs: ['https://rpc.ankr.com/eth'],
     blockExplorer: 'https://etherscan.io',
+  },
+  {
+    chainId: 10,
+    name: 'Optimism',
+    currency: 'ETH',
+    rpcs: ['https://rpc.ankr.com/optimism'],
+    blockExplorer: 'https://optimistic.etherscan.io',
   },
   {
     chainId: 42161,

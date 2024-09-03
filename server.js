@@ -24,6 +24,23 @@ import {
   delegateArbSuccess,
 } from './controllers/delegate/arb/images.js';
 
+import { 
+  opDelegateConfirm,
+  opDelegateDelegate,
+  opMyDelegateShare,
+  opDelegateStart1, 
+  opDelegateTxCallback,
+  opDelegateTxData,
+} from './controllers/delegate/op/frames.js';
+
+import { 
+  delegateOpConfirm, 
+  delegateOpDelegate, 
+  delegateOpNoDelegate,
+  delegateOpShare,
+  delegateOpSuccess,
+} from './controllers/delegate/op/images.js';
+
 const app = Fastify({
   logger: true
 });
@@ -79,6 +96,24 @@ app.get('/image/arb/delegate', delegateArbDelegate);
 app.get('/image/arb/no-delegate', delegateArbNoDelegate);
 app.get('/image/arb/share', delegateArbShare);
 app.get('/image/arb/success', delegateArbSuccess);
+
+// OPTIMISM DELEGATE FRAMES
+app.get('/frame/delegate/op/confirm', opDelegateConfirm);
+app.post('/frame/delegate/op/confirm', opDelegateConfirm);
+app.post('/frame/delegate/op/delegate', opDelegateDelegate);
+app.get('/frame/delegate/op/delegate', opDelegateDelegate);
+app.get('/frame/delegate/op/share', opMyDelegateShare);
+app.get('/frame/delegate/op/start-1', opDelegateStart1);
+app.post('/frame/delegate/op/start-1', opDelegateStart1);
+app.post('/frame/delegate/op/tx-callback', opDelegateTxCallback);
+app.post('/frame/delegate/op/tx-data', opDelegateTxData);
+
+// OPTIMISM DELEGATE IMAGES
+app.get('/image/op/confirm', delegateOpConfirm);
+app.get('/image/op/delegate', delegateOpDelegate);
+app.get('/image/op/no-delegate', delegateOpNoDelegate);
+app.get('/image/op/share', delegateOpShare);
+app.get('/image/op/success', delegateOpSuccess);
 
 // run the server
 app.listen({ port: process.env.PORT || 3000 }, function (err, address) {

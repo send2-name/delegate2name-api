@@ -2,14 +2,14 @@ import { ethers } from "ethers";
 import { getSocialsFromAddress, getSocialsFromEns, getSocialsFromFarcaster, getSocialsFromFid } from "../../../utils/airstack.js";
 import { getPageUrl } from "../../../utils/request.js";
 import { getTokenBalance } from '../../../utils/balance.js';
-import { getArbAddress, getArbitrumDelegate } from '../../../utils/dao.js';
+import { getOpAddress, getOptimismDelegate } from '../../../utils/dao.js';
 import { getProvider } from '../../../utils/network.js';
 import { getAddress } from "../../../utils/sanitize.js";
 import { validateFramesMessage } from "../../../utils/validate.js";
 
-const chainId = 42161;
+const chainId = 10;
 
-export async function arbDelegateDelegate(request, reply) {
+export async function opDelegateDelegate(request, reply) {
   // verify the user's signature via airstack API if signature is present
   if (request?.body?.untrustedData && request?.body?.trustedData) {
     validateFramesMessage(request.body.untrustedData, request.body.trustedData)
@@ -40,10 +40,10 @@ export async function arbDelegateDelegate(request, reply) {
         if (!fidQuery?.userAddress) {
           title = "Invalid or missing address";
           description = "Please provide a valid address to check its delegate.";
-          imageUrl = `${host}/static/img/delegate/arb/arb-delegate-no-address.png`;
-          button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
+          imageUrl = `${host}/static/img/delegate/op/delegate-no-address.png`;
+          button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/op/start-1` };
       
-          return reply.view("./templates/delegate/arb/error-delegate.liquid", {
+          return reply.view("./templates/delegate/op/error-delegate.liquid", {
             button1,
             description,
             imageUrl,
@@ -68,10 +68,10 @@ export async function arbDelegateDelegate(request, reply) {
       } else {
         title = "Error fetching user data";
         description = fidQuery?.message || "Error fetching user data";
-        imageUrl = `${host}/static/img/delegate/arb/arb-delegate-error.png`;
-        button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
+        imageUrl = `${host}/static/img/delegate/op/delegate-error.png`;
+        button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/op/start-1` };
     
-        return reply.view("./templates/delegate/arb/error-delegate.liquid", {
+        return reply.view("./templates/delegate/op/error-delegate.liquid", {
           button1,
           description,
           imageUrl,
@@ -85,10 +85,10 @@ export async function arbDelegateDelegate(request, reply) {
   if (!userAddress) {
     title = "Invalid or missing address";
     description = "Please provide a valid address to check its delegate.";
-    imageUrl = `${host}/static/img/delegate/arb/arb-delegate-error.png`;
-    button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
+    imageUrl = `${host}/static/img/delegate/op/delegate-error.png`;
+    button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/op/start-1` };
 
-    return reply.view("./templates/delegate/arb/error-delegate.liquid", {
+    return reply.view("./templates/delegate/op/error-delegate.liquid", {
       button1,
       description,
       imageUrl,
@@ -99,10 +99,10 @@ export async function arbDelegateDelegate(request, reply) {
 
   const provider = getProvider(chainId);
 
-  const arbAddress = getArbAddress();
-  const balance = await getTokenBalance(userAddress, arbAddress, provider, 18, 4);
+  const opAddress = getOpAddress();
+  const balance = await getTokenBalance(userAddress, opAddress, provider, 18, 4);
 
-  const delegateQuery = await getArbitrumDelegate(userAddress, provider);
+  const delegateQuery = await getOptimismDelegate(userAddress, provider);
 
   const delegateAddress = delegateQuery?.delegate;
   let delegateName;
@@ -110,12 +110,12 @@ export async function arbDelegateDelegate(request, reply) {
 
   // if no delegate, show a different frame
   if (!delegateAddress && delegateQuery?.success) {
-    title = "No Arbitrum Delegate";
-    description = "You don't have an Arbitrum delegate yet.";
-    imageUrl = `${host}/image/arb/no-delegate?t=${timestamp}&user=${userName}&balance=${balance}&ushort=${userShortAddress}`;
-    button1 = { text: "Submit", action: "post", url: `${host}/frame/delegate/arb/confirm?t=${timestamp}` };
+    title = "No Optimism Delegate";
+    description = "You don't have an Optimism delegate yet.";
+    imageUrl = `${host}/image/op/no-delegate?t=${timestamp}&user=${userName}&balance=${balance}&ushort=${userShortAddress}`;
+    button1 = { text: "Submit", action: "post", url: `${host}/frame/delegate/op/confirm?t=${timestamp}` };
 
-    return reply.view("./templates/delegate/arb/delegate2.liquid", {
+    return reply.view("./templates/delegate/op/delegate2.liquid", {
       button1,
       description,
       imageUrl,
@@ -147,9 +147,9 @@ export async function arbDelegateDelegate(request, reply) {
     }
   }
 
-  title = "My Arbitrum Delegate";
-  description = "Check who's my Arbitrum delegate and my ARB balance.";
-  imageUrl = `${host}/image/arb/delegate?t=${timestamp}&user=${userName}&balance=${balance}&delegate=${delegateName}&ushort=${userShortAddress}&dshort=${delegateShortAddress}`;
+  title = "My Optimism Delegate";
+  description = "Check who's my Optimism delegate and my OP balance.";
+  imageUrl = `${host}/image/op/delegate?t=${timestamp}&user=${userName}&balance=${balance}&delegate=${delegateName}&ushort=${userShortAddress}&dshort=${delegateShortAddress}`;
 
   let delegateNameCast = delegateName;
 
@@ -157,13 +157,13 @@ export async function arbDelegateDelegate(request, reply) {
     delegateNameCast = delegateShortAddress;
   }
 
-  let warpcastShareUrl = `https://warpcast.com/~/compose?text=My+Arbitrum+delegate+is+${delegateNameCast}.+Check+yours+via+this+frame+made+by+%40tempetechie.eth+%26+%40tekr0x.eth+&embeds[]=${host}%2Fframe%2Fdelegate%2Farb%2Fshare%3Ft%3D${timestamp}%26user%3D${userName}%26ushort%3D${userShortAddress}%26balance%3D${balance}%26delegate%3D${delegateName}%26dshort%3D${delegateShortAddress}`;
+  let warpcastShareUrl = `https://warpcast.com/~/compose?text=My+Optimism+delegate+is+${delegateNameCast}.+Check+yours+via+this+frame+made+by+%40tempetechie.eth+%26+%40tekr0x.eth+&embeds[]=${host}%2Fframe%2Fdelegate%2Fop%2Fshare%3Ft%3D${timestamp}%26user%3D${userName}%26ushort%3D${userShortAddress}%26balance%3D${balance}%26delegate%3D${delegateName}%26dshort%3D${delegateShortAddress}`;
 
   // buttons
-  button1 = { text: "Submit", action: "post", url: `${host}/frame/delegate/arb/confirm?t=${timestamp}&current-delegate-address=${delegateAddress}` };
+  button1 = { text: "Submit", action: "post", url: `${host}/frame/delegate/op/confirm?t=${timestamp}&current-delegate-address=${delegateAddress}` };
   let button2 = { text: "Share", action: "link", url: warpcastShareUrl };
 
-  return reply.view("./templates/delegate/arb/delegate.liquid", {
+  return reply.view("./templates/delegate/op/delegate.liquid", {
     button1,
     button2,
     description,
@@ -173,7 +173,7 @@ export async function arbDelegateDelegate(request, reply) {
   });
 }
 
-export async function arbDelegateConfirm(request, reply) {
+export async function opDelegateConfirm(request, reply) {
   // verify the user's signature via airstack API if signature is present
   if (request?.body?.untrustedData && request?.body?.trustedData) {
     validateFramesMessage(request.body.untrustedData, request.body.trustedData)
@@ -199,10 +199,10 @@ export async function arbDelegateConfirm(request, reply) {
   if (!newDelegate) {
     title = "Invalid or missing delegate";
     description = "Please enter a delegate address or FC/ENS name.";
-    imageUrl = `${host}/static/img/delegate/arb/arb-delegate-error.png`;
-    button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
+    imageUrl = `${host}/static/img/delegate/op/delegate-error.png`;
+    button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/op/start-1` };
 
-    return reply.view("./templates/delegate/arb/error-delegate.liquid", {
+    return reply.view("./templates/delegate/op/error-delegate.liquid", {
       button1,
       description,
       imageUrl,
@@ -253,10 +253,10 @@ export async function arbDelegateConfirm(request, reply) {
   if (!delegateAddress) {
     title = "Delegate not found";
     description = "Please provide a valid delegate address or FC/ENS name.";
-    imageUrl = `${host}/static/img/delegate/arb/arb-delegate-not-found.png`;
-    button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
+    imageUrl = `${host}/static/img/delegate/op/delegate-not-found.png`;
+    button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/op/start-1` };
 
-    return reply.view("./templates/delegate/arb/error-delegate.liquid", {
+    return reply.view("./templates/delegate/op/error-delegate.liquid", {
       button1,
       description,
       imageUrl,
@@ -269,10 +269,10 @@ export async function arbDelegateConfirm(request, reply) {
   if (String(delegateAddress).toLowerCase() === String(currentDelegateAddress).toLowerCase()) {
     title = "Same Delegate";
     description = "You are already delegating to this address.";
-    imageUrl = `${host}/static/img/delegate/arb/arb-delegate-already-set.png`;
-    button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
+    imageUrl = `${host}/static/img/delegate/op/delegate-already-set.png`;
+    button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/op/start-1` };
 
-    return reply.view("./templates/delegate/arb/error-delegate.liquid", {
+    return reply.view("./templates/delegate/op/error-delegate.liquid", {
       button1,
       description,
       imageUrl,
@@ -294,20 +294,20 @@ export async function arbDelegateConfirm(request, reply) {
 
   button1 = { 
     text: "Confirm", action: "tx", 
-    target: `${host}/frame/delegate/arb/tx-data?delegate=${delegateAddress}`, 
-    url: `${host}/frame/delegate/arb/tx-callback?delegate=${delegateAddress}&dname=${delegateName}` 
+    target: `${host}/frame/delegate/op/tx-data?delegate=${delegateAddress}`, 
+    url: `${host}/frame/delegate/op/tx-callback?delegate=${delegateAddress}&dname=${delegateName}` 
   };
   
-  const button2 = { text: "Back", action: "post", url: `${host}/frame/delegate/arb/start-1` };
+  const button2 = { text: "Back", action: "post", url: `${host}/frame/delegate/op/start-1` };
   
-  const warpcastShareUrl = `https://warpcast.com/~/compose?text=Consider+setting+${delegateName}+as+your+Arbitrum+delegate.+Share+this+frame+with+your+friends.+Frame+made+by+%40tempetechie.eth+%26+%40tekr0x.eth+&embeds[]=${host}%2Fframe%2Fdelegate%2Farb%2Fconfirm%3Ft%3D${timestamp}%26delegate%3D${delegateAddress}`;
+  const warpcastShareUrl = `https://warpcast.com/~/compose?text=Consider+setting+${delegateName}+as+your+Optimism+delegate.+Share+this+frame+with+your+friends.+Frame+made+by+%40tempetechie.eth+%26+%40tekr0x.eth+&embeds[]=${host}%2Fframe%2Fdelegate%2Fop%2Fconfirm%3Ft%3D${timestamp}%26delegate%3D${delegateAddress}`;
   const button3 = { text: "Share", action: "link", url: warpcastShareUrl };
 
-  title = `Set ${delegateName} as your Arbitrum Delegate`;
-  description = `Consider setting ${delegateName} as your Arbitrum delegate. Share this frame with your friends.`;
-  imageUrl = `${host}/image/arb/confirm?t=${timestamp}&ens=${delegateEns}&fc=${delegateFarcaster}&short=${delegateShortAddress}`;
+  title = `Set ${delegateName} as your Optimism Delegate`;
+  description = `Consider setting ${delegateName} as your Optimism delegate. Share this frame with your friends.`;
+  imageUrl = `${host}/image/op/confirm?t=${timestamp}&ens=${delegateEns}&fc=${delegateFarcaster}&short=${delegateShortAddress}`;
 
-  return reply.view("./templates/delegate/arb/confirm.liquid", {
+  return reply.view("./templates/delegate/op/confirm.liquid", {
     button1,
     button2,
     button3,
@@ -318,18 +318,18 @@ export async function arbDelegateConfirm(request, reply) {
   });
 }
 
-export function arbDelegateStart1(request, reply) {
+export function opDelegateStart1(request, reply) {
   const timestamp = Math.floor(new Date().getTime() / 1000);
   const { pageUrl, host } = getPageUrl(request);
 
-  let title = "Arbitrum Delegate Frame";
-  let description = "Check or set your Arbitrum Delegate.";
-  let imageUrl = `${host}/static/img/delegate/arb/arb-start-1.png`;
+  let title = "Optimism Delegate Frame";
+  let description = "Check or set your Optimism Delegate.";
+  let imageUrl = `${host}/static/img/delegate/op/start-1.png`;
 
   // buttons
-  let button1 = { text: "Check My Delegate", action: "post", url: `${host}/frame/delegate/arb/delegate?t=${timestamp}` };
+  let button1 = { text: "Check My Delegate", action: "post", url: `${host}/frame/delegate/op/delegate?t=${timestamp}` };
 
-  reply.view("./templates/delegate/arb/start-1.liquid", {
+  reply.view("./templates/delegate/op/start-1.liquid", {
     button1,
     description,
     imageUrl,
@@ -343,7 +343,7 @@ export function arbDelegateStart1(request, reply) {
   }
 }
 
-export async function arbDelegateTxCallback(request, reply) {
+export async function opDelegateTxCallback(request, reply) {
   // verify the user's signature via airstack API if signature is present
   if (request?.body?.untrustedData && request?.body?.trustedData) {
     validateFramesMessage(request.body.untrustedData, request.body.trustedData)
@@ -360,7 +360,7 @@ export async function arbDelegateTxCallback(request, reply) {
   }
 
   const provider = getProvider(chainId);
-  const blockExplorerUrl = "https://arbiscan.io/tx/" + txHash;
+  const blockExplorerUrl = "https://optimistic.etherscan.io/tx/" + txHash;
 
   const txReceipt = await provider.getTransactionReceipt(txHash);
   let title;
@@ -370,12 +370,12 @@ export async function arbDelegateTxCallback(request, reply) {
 
   if (!txReceipt) {
     // tx is still pending
-    button1 = { text: "Check Again", action: "post", url: `${host}/frame/delegate/arb/tx-callback?delegate=${delegateAddress}&dname=${delegateName}&tx=${txHash}` };
+    button1 = { text: "Check Again", action: "post", url: `${host}/frame/delegate/op/tx-callback?delegate=${delegateAddress}&dname=${delegateName}&tx=${txHash}` };
     title = "Transaction Pending";
     description = "Your transaction is being processed. Please check again later.";
-    imageUrl = `${host}/static/img/delegate/arb/arb-callback-wait.gif`;
+    imageUrl = `${host}/static/img/delegate/op/callback-wait.gif`;
 
-    return reply.view("./templates/delegate/arb/pending.liquid", {
+    return reply.view("./templates/delegate/op/pending.liquid", {
       button1,
       description,
       imageUrl,
@@ -387,15 +387,15 @@ export async function arbDelegateTxCallback(request, reply) {
 
     if (txReceipt?.status === 1) {
       // successful tx
-      imageUrl = `${host}/image/arb/success?t=${timestamp}&delegate=${delegateName}`;
+      imageUrl = `${host}/image/op/success?t=${timestamp}&delegate=${delegateName}`;
       title = "Transaction Successful";
-      description = "Your Arbitrum delegate has been set successfully.";
+      description = "Your Optimism delegate has been set successfully.";
 
-      const warpcastShareUrl = `https://warpcast.com/~/compose?text=I+have+set+${delegateName}+as+my+Arbitrum+delegate.+Consider+${delegateName}+as+your+delegate+too%2C+via+this+frame+made+by+%40tempetechie.eth+%26+%40tekr0x.eth+&embeds[]=${host}%2Fframe%2Fdelegate%2Farb%2Fconfirm%3Ft%3D${timestamp}%26delegate%3D${String(delegateName).replace("@", "")}`;
+      const warpcastShareUrl = `https://warpcast.com/~/compose?text=I+have+set+${delegateName}+as+my+Optimism+delegate.+Consider+${delegateName}+as+your+delegate+too%2C+via+this+frame+made+by+%40tempetechie.eth+%26+%40tekr0x.eth+&embeds[]=${host}%2Fframe%2Fdelegate%2Fop%2Fconfirm%3Ft%3D${timestamp}%26delegate%3D${String(delegateName).replace("@", "")}`;
       const button2 = { text: "Share", action: "link", url: warpcastShareUrl };
-      const button3 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
+      const button3 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/op/start-1` };
 
-      return reply.view("./templates/delegate/arb/success.liquid", {
+      return reply.view("./templates/delegate/op/success.liquid", {
         button1,
         button2,
         button3,
@@ -406,13 +406,13 @@ export async function arbDelegateTxCallback(request, reply) {
       });
     } else if (txReceipt?.status === 0) {
       // failed tx
-      imageUrl = `${host}/static/img/delegate/arb/arb-delegate-fail.png`;
+      imageUrl = `${host}/static/img/delegate/op/delegate-fail.png`;
       title = "Transaction Failed";
-      description = "Your Arbitrum delegate transaction has failed.";
+      description = "Your Optimism delegate transaction has failed.";
 
-      const button2 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
+      const button2 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/op/start-1` };
 
-      return reply.view("./templates/delegate/arb/fail.liquid", {
+      return reply.view("./templates/delegate/op/fail.liquid", {
         button1,
         button2,
         description,
@@ -422,13 +422,13 @@ export async function arbDelegateTxCallback(request, reply) {
       });
     } else {
       // unknown tx status
-      imageUrl = `${host}/static/img/delegate/arb/arb-delegate-unknown.png`;
+      imageUrl = `${host}/static/img/delegate/op/delegate-unknown.png`;
       title = "Transaction Status Unknown";
-      description = "Your Arbitrum delegate transaction status is unknown.";
+      description = "Your Optimism delegate transaction status is unknown.";
 
-      const button2 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
+      const button2 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/op/start-1` };
 
-      return reply.view("./templates/delegate/arb/fail.liquid", {
+      return reply.view("./templates/delegate/op/fail.liquid", {
         button1,
         button2,
         description,
@@ -441,7 +441,7 @@ export async function arbDelegateTxCallback(request, reply) {
 
 }
 
-export function arbDelegateTxData(request, reply) {
+export function opDelegateTxData(request, reply) {
   // verify the user's signature via airstack API if signature is present
   if (request?.body?.untrustedData && request?.body?.trustedData) {
     validateFramesMessage(request.body.untrustedData, request.body.trustedData)
@@ -454,7 +454,7 @@ export function arbDelegateTxData(request, reply) {
     return;
   }
 
-  const arbAddress = getArbAddress();
+  const opAddress = getOpAddress();
 
   const abi = [
     "function delegate(address delegatee) public",
@@ -469,7 +469,7 @@ export function arbDelegateTxData(request, reply) {
     chainId: `eip155:${chainId}`,
     params: {
       abi: abi,
-      to: arbAddress,
+      to: opAddress,
       data: txData,
       value: "0",
     },
@@ -478,7 +478,7 @@ export function arbDelegateTxData(request, reply) {
   return reply.send(tx);
 }
 
-export async function arbMyDelegateShare(request, reply) {
+export async function opMyDelegateShare(request, reply) {
   // verify the user's signature via airstack API if signature is present
   if (request?.body?.untrustedData && request?.body?.trustedData) {
     validateFramesMessage(request.body.untrustedData, request.body.trustedData)
@@ -508,12 +508,12 @@ export async function arbMyDelegateShare(request, reply) {
     return;
   }
 
-  const title = "Share My Arbitrum Delegate";
-  const description = "Share your Arbitrum Delegate frame with your friends.";
-  const imageUrl = `${host}/image/arb/share?t=${timestamp}&user=${user}&balance=${balance}&delegate=${delegate}&ushort=${userShortAddress}&dshort=${delegateShortAddress}`;
-  const button1 = { text: "Check My Delegate", action: "post", url: `${host}/frame/delegate/arb/delegate?t=${timestamp}` };
+  const title = "Share My Optimism Delegate";
+  const description = "Share your Optimism Delegate frame with your friends.";
+  const imageUrl = `${host}/image/op/share?t=${timestamp}&user=${user}&balance=${balance}&delegate=${delegate}&ushort=${userShortAddress}&dshort=${delegateShortAddress}`;
+  const button1 = { text: "Check My Delegate", action: "post", url: `${host}/frame/delegate/op/delegate?t=${timestamp}` };
 
-  return reply.view("./templates/delegate/arb/share.liquid", {
+  return reply.view("./templates/delegate/op/share.liquid", {
     button1,
     description,
     imageUrl,
