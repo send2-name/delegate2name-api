@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getEnvVar } from './datastore.js';
 
-// Airstack Frames message validation by 0xdownshift
+// Airstack Frames message validation adapted from 0xdownshift's code
 // https://gist.github.com/0xdownshift/ef7febdc1c62b41cd4866aa7a6bc9e39
 export async function validateFramesMessage(untrustedData, trustedData) {
   console.log('Validating frames message...');
@@ -10,78 +10,76 @@ export async function validateFramesMessage(untrustedData, trustedData) {
   let apiKey;
   if (!process.env.MYLOCALHOST) {
     apiKey = await getEnvVar("airstackApiKey");
-  }
 
-  if (!apiKey) {
-    throw new Error("API Key is not provided.");
-  }
+    if (apiKey) {
+      if (!trustedData || !trustedData.messageBytes || trustedData.messageBytes.trim() === '') {
+        console.warn('Invalid or empty messageBytes received');
 
-  if (!trustedData || !trustedData.messageBytes || trustedData.messageBytes.trim() === '') {
-    console.warn('Invalid or empty messageBytes received');
-
-    return {
-      isValid: false,
-      message: 'Invalid or empty messageBytes',
-    };
-  }
-
-  try {
-    const messageBytes = hexStringToUint8Array(trustedData.messageBytes);
-
-    const validateMessageResponse = await axios.post(
-      "https://hubs.airstack.xyz/v1/validateMessage",
-      messageBytes,
-      {
-        headers: {
-          "Content-Type": "application/octet-stream",
-          "x-airstack-hubs": apiKey,
-        },
-      },
-      {timeout: 2500}
-    );
-
-    //console.log('Validate Message Response:', validateMessageResponse.data);
-
-    const { valid, message } = validateMessageResponse.data;
-
-    if (valid) {
-      let formattedMessage;
+        return {
+          isValid: false,
+          message: 'Invalid or empty messageBytes',
+        };
+      }
 
       try {
-        formattedMessage = typeof message === 'string' ? JSON.parse(message) : message;
-      } catch (parseError) {
-        console.error('Error parsing message:', parseError);
-        console.log('Raw message:', message);
-        throw new Error('Failed to parse message from API response');
-      }
+        const messageBytes = hexStringToUint8Array(trustedData.messageBytes);
 
-      if (formattedMessage.data?.frameActionBody?.castId?.hash && untrustedData.castId?.hash) {
-        formattedMessage.data.frameActionBody.castId.hash = bytesFromBase64(
-          untrustedData.castId.hash
+        const validateMessageResponse = await axios.post(
+          "https://hubs.airstack.xyz/v1/validateMessage",
+          messageBytes,
+          {
+            headers: {
+              "Content-Type": "application/octet-stream",
+              "x-airstack-hubs": apiKey,
+            },
+          },
+          {timeout: 2500}
         );
+
+        //console.log('Validate Message Response:', validateMessageResponse.data);
+
+        const { valid, message } = validateMessageResponse.data;
+
+        if (valid) {
+          let formattedMessage;
+
+          try {
+            formattedMessage = typeof message === 'string' ? JSON.parse(message) : message;
+          } catch (parseError) {
+            console.error('Error parsing message:', parseError);
+            console.log('Raw message:', message);
+            throw new Error('Failed to parse message from API response');
+          }
+
+          if (formattedMessage.data?.frameActionBody?.castId?.hash && untrustedData.castId?.hash) {
+            formattedMessage.data.frameActionBody.castId.hash = bytesFromBase64(
+              untrustedData.castId.hash
+            );
+          }
+
+          //console.log('Formatted Message:', formattedMessage);
+
+          return {
+            isValid: true,
+            message: formattedMessage,
+          };
+        } else {
+          return {
+            isValid: false,
+            message: 'Message validation failed',
+          };
+        }
+      } catch (error) {
+        console.error('Error validating frames message:', error);
+
+        if (error.response) {
+          console.error('API response status:', error.response.status);
+          console.error('API response data:', error.response.data);
+        }
+
+        throw error;
       }
-
-      //console.log('Formatted Message:', formattedMessage);
-
-      return {
-        isValid: true,
-        message: formattedMessage,
-      };
-    } else {
-      return {
-        isValid: false,
-        message: 'Message validation failed',
-      };
     }
-  } catch (error) {
-    console.error('Error validating frames message:', error);
-
-    if (error.response) {
-      console.error('API response status:', error.response.status);
-      console.error('API response data:', error.response.data);
-    }
-
-    throw error;
   }
 }
 

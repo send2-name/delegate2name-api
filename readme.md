@@ -41,3 +41,17 @@ Go to Datastore on the Cloud Console and create the `EnvVar` kind. In the `EnvVa
 - Go to Cloud Tasks and create the `default` queue.
   - Make sure the region is europe-west1
   - Leave everything else the default
+
+# Frames local debugging
+
+Install [frame.js local debugger](https://framesjs.org/guides/debugger#local-installation):
+
+```bash
+npm install -g @frames.js/debugger
+```
+
+Run it with:
+
+```bash
+frames
+```

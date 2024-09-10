@@ -1,7 +1,6 @@
 import { ethers } from "ethers";
 import { getSocialsFromAddress, getSocialsFromEns, getSocialsFromFarcaster, getSocialsFromFid } from "../../../utils/airstack.js";
 import { getPageUrl } from "../../../utils/request.js";
-import { getTokenBalance } from '../../../utils/balance.js';
 import { getArbAddress, getArbitrumDelegate } from '../../../utils/dao.js';
 import { getProvider } from '../../../utils/network.js';
 import { getAddress } from "../../../utils/sanitize.js";
@@ -29,12 +28,17 @@ export async function arbDelegateDelegate(request, reply) {
   let userEns;
   let userAvatar;
   let userName;
+  let balance;
+  let delegateFarcaster;
+
+  const provider = getProvider(chainId);
+  const balanceCheckerAddress = "0x1a20A1b287c41F601da0Ea0468E84150AAB71457";
 
   if (!userAddress) {
     const fid = request?.body?.untrustedData?.fid || request.query.fid;
 
     if (fid) {
-      const fidQuery = await getSocialsFromFid(fid);
+      const fidQuery = await getSocialsFromFid(fid, provider, balanceCheckerAddress);
 
       if (fidQuery.success) {
         if (!fidQuery?.userAddress) {
@@ -57,6 +61,7 @@ export async function arbDelegateDelegate(request, reply) {
         userFarcaster = fidQuery?.farcaster;
         userEns = fidQuery?.ens;
         userAvatar = fidQuery?.avatar;
+        balance = fidQuery?.balance;
 
         if (userFarcaster) {
           userName = `@${String(userFarcaster).replace("@", "")}`;
@@ -97,11 +102,6 @@ export async function arbDelegateDelegate(request, reply) {
     });
   }
 
-  const provider = getProvider(chainId);
-
-  const arbAddress = getArbAddress();
-  const balance = await getTokenBalance(userAddress, arbAddress, provider, 18, 4);
-
   const delegateQuery = await getArbitrumDelegate(userAddress, provider);
 
   const delegateAddress = delegateQuery?.delegate;
@@ -126,8 +126,6 @@ export async function arbDelegateDelegate(request, reply) {
     delegateFarcaster = null;
     delegateName = "Error fetching delegate";
   }
-
-  let delegateFarcaster;
 
   if (String(delegateAddress).toLowerCase() === String(userAddress).toLowerCase()) {
     delegateName = userName;

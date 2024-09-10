@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import { ethers } from 'ethers'; 
 import { fetchQuery, init } from "@airstack/node";
+import { getHighestTokenBalance } from './balance.js';
 import { getEnvVar } from './datastore.js';
 import { getSocialsByAddress, getSocialsByEns } from './names.js';
 
@@ -240,7 +241,7 @@ export async function getSocialsFromFarcaster(farcaster) {
   }
 }
 
-export async function getSocialsFromFid(fid) {
+export async function getSocialsFromFid(fid, provider, balanceCheckerAddress) {
   const query = `
     query MyQuery {
       Socials(input: {filter: {userId: {_eq: "${fid}"}}, blockchain: ethereum}) {
@@ -274,14 +275,22 @@ export async function getSocialsFromFid(fid) {
     }
 
     const connectedAddresses = result?.data.Socials?.Social[0]?.connectedAddresses || [];
-    let userAddress;
 
+    let cAddresses = [];
     for (let i = 0; i < connectedAddresses.length; i++) {
       // check if it's a valid EVM address (to avoid using a non-EVM address)
       if (ethers.utils.isAddress(connectedAddresses[i]?.address)) {
-        userAddress = connectedAddresses[i]?.address;
-        break;
+        cAddresses.push(connectedAddresses[i]?.address);
       }
+    }
+
+    const highestTokenBalanceResult = await getHighestTokenBalance(cAddresses, balanceCheckerAddress, provider, 18, 4);
+
+    let userAddress = highestTokenBalanceResult?.userAddress;
+
+    // if user address is ZeroAddress, then use the first connected address
+    if (ethers.constants.AddressZero === userAddress) {
+      userAddress = connectedAddresses[0]?.address;
     }
 
     const profileHandle = result?.data.Socials?.Social[0]?.profileHandle || null;
@@ -296,7 +305,10 @@ export async function getSocialsFromFid(fid) {
       }
     }
 
-    return { success: true, userAddress, farcaster: profileHandle, avatar: profileImage, ens: ensName };
+    return { 
+      success: true, userAddress, balance: highestTokenBalanceResult?.balance, farcaster: profileHandle, 
+      avatar: profileImage, ens: ensName 
+    };
   } catch (e) {
     console.log(e);
     return { success: false, message: e };
