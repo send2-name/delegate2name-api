@@ -21,9 +21,9 @@ Go to Datastore on the Cloud Console and create the `EnvVar` kind. In the `EnvVa
 
 ## Cloud Build
 
-- Enable Cloud Build API, Cloud Tasks API & App Engine Admin API & Secret Manager API 
+- Enable Cloud Build API, Cloud Tasks API & App Engine Admin API, Cloud Scheduler API & Secret Manager API 
 - Go to IAM and check the `Include Google-provided role grants` checkbox
-  - Then give your "Cloud Build" service account the `Cloud Scheduler Admin` role
+  - Then give your "Cloud Build" service account & the Default App Engine service account the `Cloud Scheduler Admin` role
 - Create App Engine app (europe-west).
   - This will also automatically create a Datastore database (it may take a few minutes).
 - Connect your GitHub repo with Google Cloud Repositories:
