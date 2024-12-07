@@ -44,10 +44,10 @@ export async function arbDelegateDelegate(request, reply) {
         if (!fidQuery?.userAddress) {
           title = "Invalid or missing address";
           description = "Please provide a valid address to check its delegate.";
-          imageUrl = `${host}/static/img/delegate/arb/arb-delegate-no-address.png`;
+          imageUrl = `${host}/static/img/delegate/arb/delegate-no-address.png`;
           button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
       
-          return reply.view("./templates/delegate/arb/error-delegate.liquid", {
+          return reply.view("./templates/delegate/error-delegate.liquid", {
             button1,
             description,
             imageUrl,
@@ -73,10 +73,10 @@ export async function arbDelegateDelegate(request, reply) {
       } else {
         title = "Error fetching user data";
         description = fidQuery?.message || "Error fetching user data";
-        imageUrl = `${host}/static/img/delegate/arb/arb-delegate-error.png`;
+        imageUrl = `${host}/static/img/delegate/arb/delegate-error.png`;
         button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
     
-        return reply.view("./templates/delegate/arb/error-delegate.liquid", {
+        return reply.view("./templates/delegate/error-delegate.liquid", {
           button1,
           description,
           imageUrl,
@@ -90,10 +90,10 @@ export async function arbDelegateDelegate(request, reply) {
   if (!userAddress) {
     title = "Invalid or missing address";
     description = "Please provide a valid address to check its delegate.";
-    imageUrl = `${host}/static/img/delegate/arb/arb-delegate-error.png`;
+    imageUrl = `${host}/static/img/delegate/arb/delegate-error.png`;
     button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
 
-    return reply.view("./templates/delegate/arb/error-delegate.liquid", {
+    return reply.view("./templates/delegate/error-delegate.liquid", {
       button1,
       description,
       imageUrl,
@@ -115,7 +115,7 @@ export async function arbDelegateDelegate(request, reply) {
     imageUrl = `${host}/image/arb/no-delegate?t=${timestamp}&user=${userName}&balance=${balance}&ushort=${userShortAddress}`;
     button1 = { text: "Submit", action: "post", url: `${host}/frame/delegate/arb/confirm?t=${timestamp}` };
 
-    return reply.view("./templates/delegate/arb/delegate2.liquid", {
+    return reply.view("./templates/delegate/delegate2.liquid", {
       button1,
       description,
       imageUrl,
@@ -161,7 +161,7 @@ export async function arbDelegateDelegate(request, reply) {
   button1 = { text: "Submit", action: "post", url: `${host}/frame/delegate/arb/confirm?t=${timestamp}&current-delegate-address=${delegateAddress}` };
   let button2 = { text: "Share", action: "link", url: warpcastShareUrl };
 
-  return reply.view("./templates/delegate/arb/delegate.liquid", {
+  return reply.view("./templates/delegate/delegate.liquid", {
     button1,
     button2,
     description,
@@ -197,10 +197,10 @@ export async function arbDelegateConfirm(request, reply) {
   if (!newDelegate) {
     title = "Invalid or missing delegate";
     description = "Please enter a delegate address or FC/ENS name.";
-    imageUrl = `${host}/static/img/delegate/arb/arb-delegate-error.png`;
+    imageUrl = `${host}/static/img/delegate/arb/delegate-error.png`;
     button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
 
-    return reply.view("./templates/delegate/arb/error-delegate.liquid", {
+    return reply.view("./templates/delegate/error-delegate.liquid", {
       button1,
       description,
       imageUrl,
@@ -251,10 +251,10 @@ export async function arbDelegateConfirm(request, reply) {
   if (!delegateAddress) {
     title = "Delegate not found";
     description = "Please provide a valid delegate address or FC/ENS name.";
-    imageUrl = `${host}/static/img/delegate/arb/arb-delegate-not-found.png`;
+    imageUrl = `${host}/static/img/delegate/arb/delegate-not-found.png`;
     button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
 
-    return reply.view("./templates/delegate/arb/error-delegate.liquid", {
+    return reply.view("./templates/delegate/error-delegate.liquid", {
       button1,
       description,
       imageUrl,
@@ -267,10 +267,10 @@ export async function arbDelegateConfirm(request, reply) {
   if (String(delegateAddress).toLowerCase() === String(currentDelegateAddress).toLowerCase()) {
     title = "Same Delegate";
     description = "You are already delegating to this address.";
-    imageUrl = `${host}/static/img/delegate/arb/arb-delegate-already-set.png`;
+    imageUrl = `${host}/static/img/delegate/arb/delegate-already-set.png`;
     button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
 
-    return reply.view("./templates/delegate/arb/error-delegate.liquid", {
+    return reply.view("./templates/delegate/error-delegate.liquid", {
       button1,
       description,
       imageUrl,
@@ -305,7 +305,7 @@ export async function arbDelegateConfirm(request, reply) {
   description = `Consider setting ${delegateName} as your Arbitrum delegate. Share this frame with your friends.`;
   imageUrl = `${host}/image/arb/confirm?t=${timestamp}&ens=${delegateEns}&fc=${delegateFarcaster}&short=${delegateShortAddress}`;
 
-  return reply.view("./templates/delegate/arb/confirm.liquid", {
+  return reply.view("./templates/delegate/confirm.liquid", {
     button1,
     button2,
     button3,
@@ -322,12 +322,12 @@ export function arbDelegateStart1(request, reply) {
 
   let title = "Arbitrum Delegate Frame";
   let description = "Check or set your Arbitrum Delegate.";
-  let imageUrl = `${host}/static/img/delegate/arb/arb-start-1.png`;
+  let imageUrl = `${host}/static/img/delegate/arb/start-1.png`;
 
   // buttons
   let button1 = { text: "Check My Delegate", action: "post", url: `${host}/frame/delegate/arb/delegate?t=${timestamp}` };
 
-  reply.view("./templates/delegate/arb/start-1.liquid", {
+  reply.view("./templates/delegate/start-1.liquid", {
     button1,
     description,
     imageUrl,
@@ -371,9 +371,9 @@ export async function arbDelegateTxCallback(request, reply) {
     button1 = { text: "Check Again", action: "post", url: `${host}/frame/delegate/arb/tx-callback?delegate=${delegateAddress}&dname=${delegateName}&tx=${txHash}` };
     title = "Transaction Pending";
     description = "Your transaction is being processed. Please check again later.";
-    imageUrl = `${host}/static/img/delegate/arb/arb-callback-wait.gif`;
+    imageUrl = `${host}/static/img/delegate/arb/callback-wait.gif`;
 
-    return reply.view("./templates/delegate/arb/pending.liquid", {
+    return reply.view("./templates/delegate/pending.liquid", {
       button1,
       description,
       imageUrl,
@@ -393,7 +393,7 @@ export async function arbDelegateTxCallback(request, reply) {
       const button2 = { text: "Share", action: "link", url: warpcastShareUrl };
       const button3 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
 
-      return reply.view("./templates/delegate/arb/success.liquid", {
+      return reply.view("./templates/delegate/success.liquid", {
         button1,
         button2,
         button3,
@@ -404,13 +404,13 @@ export async function arbDelegateTxCallback(request, reply) {
       });
     } else if (txReceipt?.status === 0) {
       // failed tx
-      imageUrl = `${host}/static/img/delegate/arb/arb-delegate-fail.png`;
+      imageUrl = `${host}/static/img/delegate/arb/delegate-fail.png`;
       title = "Transaction Failed";
       description = "Your Arbitrum delegate transaction has failed.";
 
       const button2 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
 
-      return reply.view("./templates/delegate/arb/fail.liquid", {
+      return reply.view("./templates/delegate/fail.liquid", {
         button1,
         button2,
         description,
@@ -420,13 +420,13 @@ export async function arbDelegateTxCallback(request, reply) {
       });
     } else {
       // unknown tx status
-      imageUrl = `${host}/static/img/delegate/arb/arb-delegate-unknown.png`;
+      imageUrl = `${host}/static/img/delegate/arb/delegate-unknown.png`;
       title = "Transaction Status Unknown";
       description = "Your Arbitrum delegate transaction status is unknown.";
 
       const button2 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/arb/start-1` };
 
-      return reply.view("./templates/delegate/arb/fail.liquid", {
+      return reply.view("./templates/delegate/fail.liquid", {
         button1,
         button2,
         description,
@@ -511,7 +511,7 @@ export async function arbMyDelegateShare(request, reply) {
   const imageUrl = `${host}/image/arb/share?t=${timestamp}&user=${user}&balance=${balance}&delegate=${delegate}&ushort=${userShortAddress}&dshort=${delegateShortAddress}`;
   const button1 = { text: "Check My Delegate", action: "post", url: `${host}/frame/delegate/arb/delegate?t=${timestamp}` };
 
-  return reply.view("./templates/delegate/arb/share.liquid", {
+  return reply.view("./templates/delegate/share.liquid", {
     button1,
     description,
     imageUrl,

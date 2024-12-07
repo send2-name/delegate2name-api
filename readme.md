@@ -55,3 +55,10 @@ Run it with:
 ```bash
 frames
 ```
+
+Run this app with:
+
+```bash
+npm run dev
+```
+

@@ -21,6 +21,13 @@ const chains = [
     blockExplorer: 'https://optimistic.etherscan.io',
   },
   {
+    chainId: 324,
+    name: 'zkSync Era',
+    currency: 'ETH',
+    rpcs: ['https://mainnet.era.zksync.io'],
+    blockExplorer: 'https://era.zksync.network',
+  },
+  {
     chainId: 42161,
     name: 'Arbitrum',
     currency: 'ETH',

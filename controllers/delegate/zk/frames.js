@@ -1,14 +1,14 @@
 import { ethers } from "ethers";
 import { getSocialsFromAddress, getSocialsFromEns, getSocialsFromFarcaster, getSocialsFromFid } from "../../../utils/airstack.js";
 import { getPageUrl } from "../../../utils/request.js";
-import { getOpAddress, getOptimismDelegate } from '../../../utils/dao.js';
+import { getZkAddress, getZkDelegate } from '../../../utils/dao.js';
 import { getProvider } from '../../../utils/network.js';
 import { getAddress } from "../../../utils/sanitize.js";
 import { validateFramesMessage } from "../../../utils/validate.js";
 
-const chainId = 10;
+const chainId = 324; // ZkSync Era mainnet chain ID
 
-export async function opDelegateDelegate(request, reply) {
+export async function zkDelegateDelegate(request, reply) {
   // verify the user's signature via airstack API if signature is present
   if (request?.body?.untrustedData && request?.body?.trustedData) {
     validateFramesMessage(request.body.untrustedData, request.body.trustedData)
@@ -32,7 +32,7 @@ export async function opDelegateDelegate(request, reply) {
   let delegateFarcaster;
 
   const provider = getProvider(chainId);
-  const balanceCheckerAddress = "0x1EB2Adc19eB3Df26D84427Be11F1eB1887c6631c";
+  const balanceCheckerAddress = "0x80014cC4e645Bc0193dcE0EeCAe7Ef449c66D702"; // Update this with the correct ZkSync balance checker address
 
   if (!userAddress) {
     const fid = request?.body?.untrustedData?.fid || request.query.fid;
@@ -44,8 +44,8 @@ export async function opDelegateDelegate(request, reply) {
         if (!fidQuery?.userAddress) {
           title = "Invalid or missing address";
           description = "Please provide a valid address to check its delegate.";
-          imageUrl = `${host}/static/img/delegate/op/delegate-no-address.png`;
-          button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/op/start-1` };
+          imageUrl = `${host}/static/img/delegate/zk/delegate-no-address.png`;
+          button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/zk/start-1` };
       
           return reply.view("./templates/delegate/error-delegate.liquid", {
             button1,
@@ -73,8 +73,8 @@ export async function opDelegateDelegate(request, reply) {
       } else {
         title = "Error fetching user data";
         description = fidQuery?.message || "Error fetching user data";
-        imageUrl = `${host}/static/img/delegate/op/delegate-error.png`;
-        button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/op/start-1` };
+        imageUrl = `${host}/static/img/delegate/zk/delegate-error.png`;
+        button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/zk/start-1` };
     
         return reply.view("./templates/delegate/error-delegate.liquid", {
           button1,
@@ -90,8 +90,8 @@ export async function opDelegateDelegate(request, reply) {
   if (!userAddress) {
     title = "Invalid or missing address";
     description = "Please provide a valid address to check its delegate.";
-    imageUrl = `${host}/static/img/delegate/op/delegate-error.png`;
-    button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/op/start-1` };
+    imageUrl = `${host}/static/img/delegate/zk/delegate-error.png`;
+    button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/zk/start-1` };
 
     return reply.view("./templates/delegate/error-delegate.liquid", {
       button1,
@@ -102,7 +102,7 @@ export async function opDelegateDelegate(request, reply) {
     });
   }
 
-  const delegateQuery = await getOptimismDelegate(userAddress, provider);
+  const delegateQuery = await getZkDelegate(userAddress, provider);
 
   const delegateAddress = delegateQuery?.delegate;
   let delegateName;
@@ -110,10 +110,10 @@ export async function opDelegateDelegate(request, reply) {
 
   // if no delegate, show a different frame
   if (!delegateAddress && delegateQuery?.success) {
-    title = "No Optimism Delegate";
-    description = "You don't have an Optimism delegate yet.";
-    imageUrl = `${host}/image/op/no-delegate?t=${timestamp}&user=${userName}&balance=${balance}&ushort=${userShortAddress}`;
-    button1 = { text: "Submit", action: "post", url: `${host}/frame/delegate/op/confirm?t=${timestamp}` };
+    title = "No ZkSync Delegate";
+    description = "You don't have a ZkSync delegate yet.";
+    imageUrl = `${host}/image/zk/no-delegate?t=${timestamp}&user=${userName}&balance=${balance}&ushort=${userShortAddress}`;
+    button1 = { text: "Submit", action: "post", url: `${host}/frame/delegate/zk/confirm?t=${timestamp}` };
 
     return reply.view("./templates/delegate/delegate2.liquid", {
       button1,
@@ -145,9 +145,9 @@ export async function opDelegateDelegate(request, reply) {
     }
   }
 
-  title = "My Optimism Delegate";
-  description = "Check who's my Optimism delegate and my OP balance.";
-  imageUrl = `${host}/image/op/delegate?t=${timestamp}&user=${userName}&balance=${balance}&delegate=${delegateName}&ushort=${userShortAddress}&dshort=${delegateShortAddress}`;
+  title = "My ZkSync Delegate";
+  description = "Check who's my ZkSync delegate and my ZK balance.";
+  imageUrl = `${host}/image/zk/delegate?t=${timestamp}&user=${userName}&balance=${balance}&delegate=${delegateName}&ushort=${userShortAddress}&dshort=${delegateShortAddress}`;
 
   let delegateNameCast = delegateName;
 
@@ -155,10 +155,10 @@ export async function opDelegateDelegate(request, reply) {
     delegateNameCast = delegateShortAddress;
   }
 
-  let warpcastShareUrl = `https://warpcast.com/~/compose?text=My+Optimism+delegate+is+${delegateNameCast}.+Check+yours+via+this+frame+made+by+%40tempetechie.eth+%26+%40tekr0x.eth+&embeds[]=${host}%2Fframe%2Fdelegate%2Fop%2Fshare%3Ft%3D${timestamp}%26user%3D${userName}%26ushort%3D${userShortAddress}%26balance%3D${balance}%26delegate%3D${delegateName}%26dshort%3D${delegateShortAddress}`;
+  let warpcastShareUrl = `https://warpcast.com/~/compose?text=My+ZkSync+delegate+is+${delegateNameCast}.+Check+yours+via+this+frame+made+by+%40tempetechie.eth+%26+%40tekr0x.eth+&embeds[]=${host}%2Fframe%2Fdelegate%2Fzk%2Fshare%3Ft%3D${timestamp}%26user%3D${userName}%26ushort%3D${userShortAddress}%26balance%3D${balance}%26delegate%3D${delegateName}%26dshort%3D${delegateShortAddress}`;
 
   // buttons
-  button1 = { text: "Submit", action: "post", url: `${host}/frame/delegate/op/confirm?t=${timestamp}&current-delegate-address=${delegateAddress}` };
+  button1 = { text: "Submit", action: "post", url: `${host}/frame/delegate/zk/confirm?t=${timestamp}&current-delegate-address=${delegateAddress}` };
   let button2 = { text: "Share", action: "link", url: warpcastShareUrl };
 
   return reply.view("./templates/delegate/delegate.liquid", {
@@ -171,7 +171,7 @@ export async function opDelegateDelegate(request, reply) {
   });
 }
 
-export async function opDelegateConfirm(request, reply) {
+export async function zkDelegateConfirm(request, reply) {
   // verify the user's signature via airstack API if signature is present
   if (request?.body?.untrustedData && request?.body?.trustedData) {
     validateFramesMessage(request.body.untrustedData, request.body.trustedData)
@@ -197,8 +197,8 @@ export async function opDelegateConfirm(request, reply) {
   if (!newDelegate) {
     title = "Invalid or missing delegate";
     description = "Please enter a delegate address or FC/ENS name.";
-    imageUrl = `${host}/static/img/delegate/op/delegate-error.png`;
-    button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/op/start-1` };
+    imageUrl = `${host}/static/img/delegate/zk/delegate-error.png`;
+    button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/zk/start-1` };
 
     return reply.view("./templates/delegate/error-delegate.liquid", {
       button1,
@@ -237,7 +237,6 @@ export async function opDelegateConfirm(request, reply) {
   } else {
     // if newDelegate is an FC name, call getSocialsFromFarcaster
     socials = await getSocialsFromFarcaster(newDelegate);
-    //console.log(socials);
 
     if (socials?.userAddress) {
       delegateAddress = getAddress(socials?.userAddress);
@@ -251,8 +250,8 @@ export async function opDelegateConfirm(request, reply) {
   if (!delegateAddress) {
     title = "Delegate not found";
     description = "Please provide a valid delegate address or FC/ENS name.";
-    imageUrl = `${host}/static/img/delegate/op/delegate-not-found.png`;
-    button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/op/start-1` };
+    imageUrl = `${host}/static/img/delegate/zk/delegate-not-found.png`;
+    button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/zk/start-1` };
 
     return reply.view("./templates/delegate/error-delegate.liquid", {
       button1,
@@ -267,8 +266,8 @@ export async function opDelegateConfirm(request, reply) {
   if (String(delegateAddress).toLowerCase() === String(currentDelegateAddress).toLowerCase()) {
     title = "Same Delegate";
     description = "You are already delegating to this address.";
-    imageUrl = `${host}/static/img/delegate/op/delegate-already-set.png`;
-    button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/op/start-1` };
+    imageUrl = `${host}/static/img/delegate/zk/delegate-already-set.png`;
+    button1 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/zk/start-1` };
 
     return reply.view("./templates/delegate/error-delegate.liquid", {
       button1,
@@ -292,18 +291,18 @@ export async function opDelegateConfirm(request, reply) {
 
   button1 = { 
     text: "Confirm", action: "tx", 
-    target: `${host}/frame/delegate/op/tx-data?delegate=${delegateAddress}`, 
-    url: `${host}/frame/delegate/op/tx-callback?delegate=${delegateAddress}&dname=${delegateName}` 
+    target: `${host}/frame/delegate/zk/tx-data?delegate=${delegateAddress}`, 
+    url: `${host}/frame/delegate/zk/tx-callback?delegate=${delegateAddress}&dname=${delegateName}` 
   };
   
-  const button2 = { text: "Back", action: "post", url: `${host}/frame/delegate/op/start-1` };
+  const button2 = { text: "Back", action: "post", url: `${host}/frame/delegate/zk/start-1` };
   
-  const warpcastShareUrl = `https://warpcast.com/~/compose?text=Consider+setting+${delegateName}+as+your+Optimism+delegate.+Share+this+frame+with+your+friends.+Frame+made+by+%40tempetechie.eth+%26+%40tekr0x.eth+&embeds[]=${host}%2Fframe%2Fdelegate%2Fop%2Fconfirm%3Ft%3D${timestamp}%26delegate%3D${delegateAddress}`;
+  const warpcastShareUrl = `https://warpcast.com/~/compose?text=Consider+setting+${delegateName}+as+your+ZkSync+delegate.+Share+this+frame+with+your+friends.+Frame+made+by+%40tempetechie.eth+%26+%40tekr0x.eth+&embeds[]=${host}%2Fframe%2Fdelegate%2Fzk%2Fconfirm%3Ft%3D${timestamp}%26delegate%3D${delegateAddress}`;
   const button3 = { text: "Share", action: "link", url: warpcastShareUrl };
 
-  title = `Set ${delegateName} as your Optimism Delegate`;
-  description = `Consider setting ${delegateName} as your Optimism delegate. Share this frame with your friends.`;
-  imageUrl = `${host}/image/op/confirm?t=${timestamp}&ens=${delegateEns}&fc=${delegateFarcaster}&short=${delegateShortAddress}`;
+  title = `Set ${delegateName} as your ZkSync Delegate`;
+  description = `Consider setting ${delegateName} as your ZkSync delegate. Share this frame with your friends.`;
+  imageUrl = `${host}/image/zk/confirm?t=${timestamp}&ens=${delegateEns}&fc=${delegateFarcaster}&short=${delegateShortAddress}`;
 
   return reply.view("./templates/delegate/confirm.liquid", {
     button1,
@@ -316,16 +315,16 @@ export async function opDelegateConfirm(request, reply) {
   });
 }
 
-export function opDelegateStart1(request, reply) {
+export function zkDelegateStart1(request, reply) {
   const timestamp = Math.floor(new Date().getTime() / 1000);
   const { pageUrl, host } = getPageUrl(request);
 
-  let title = "Optimism Delegate Frame";
-  let description = "Check or set your Optimism Delegate.";
-  let imageUrl = `${host}/static/img/delegate/op/start-1.png`;
+  let title = "ZkSync Delegate Frame";
+  let description = "Check or set your ZkSync Delegate.";
+  let imageUrl = `${host}/static/img/delegate/zk/start-1.png`;
 
   // buttons
-  let button1 = { text: "Check My Delegate", action: "post", url: `${host}/frame/delegate/op/delegate?t=${timestamp}` };
+  let button1 = { text: "Check My Delegate", action: "post", url: `${host}/frame/delegate/zk/delegate?t=${timestamp}` };
 
   reply.view("./templates/delegate/start-1.liquid", {
     button1,
@@ -341,7 +340,7 @@ export function opDelegateStart1(request, reply) {
   }
 }
 
-export async function opDelegateTxCallback(request, reply) {
+export async function zkDelegateTxCallback(request, reply) {
   // verify the user's signature via airstack API if signature is present
   if (request?.body?.untrustedData && request?.body?.trustedData) {
     validateFramesMessage(request.body.untrustedData, request.body.trustedData)
@@ -358,7 +357,7 @@ export async function opDelegateTxCallback(request, reply) {
   }
 
   const provider = getProvider(chainId);
-  const blockExplorerUrl = "https://optimistic.etherscan.io/tx/" + txHash;
+  const blockExplorerUrl = "https://explorer.zksync.io/tx/" + txHash;
 
   const txReceipt = await provider.getTransactionReceipt(txHash);
   let title;
@@ -368,10 +367,10 @@ export async function opDelegateTxCallback(request, reply) {
 
   if (!txReceipt) {
     // tx is still pending
-    button1 = { text: "Check Again", action: "post", url: `${host}/frame/delegate/op/tx-callback?delegate=${delegateAddress}&dname=${delegateName}&tx=${txHash}` };
+    button1 = { text: "Check Again", action: "post", url: `${host}/frame/delegate/zk/tx-callback?delegate=${delegateAddress}&dname=${delegateName}&tx=${txHash}` };
     title = "Transaction Pending";
     description = "Your transaction is being processed. Please check again later.";
-    imageUrl = `${host}/static/img/delegate/op/callback-wait.gif`;
+    imageUrl = `${host}/static/img/delegate/zk/callback-wait.gif`;
 
     return reply.view("./templates/delegate/pending.liquid", {
       button1,
@@ -385,13 +384,13 @@ export async function opDelegateTxCallback(request, reply) {
 
     if (txReceipt?.status === 1) {
       // successful tx
-      imageUrl = `${host}/image/op/success?t=${timestamp}&delegate=${delegateName}`;
+      imageUrl = `${host}/image/zk/success?t=${timestamp}&delegate=${delegateName}`;
       title = "Transaction Successful";
-      description = "Your Optimism delegate has been set successfully.";
+      description = "Your ZkSync delegate has been set successfully.";
 
-      const warpcastShareUrl = `https://warpcast.com/~/compose?text=I+have+set+${delegateName}+as+my+Optimism+delegate.+Consider+${delegateName}+as+your+delegate+too%2C+via+this+frame+made+by+%40tempetechie.eth+%26+%40tekr0x.eth+&embeds[]=${host}%2Fframe%2Fdelegate%2Fop%2Fconfirm%3Ft%3D${timestamp}%26delegate%3D${String(delegateName).replace("@", "")}`;
+      const warpcastShareUrl = `https://warpcast.com/~/compose?text=I+have+set+${delegateName}+as+my+ZkSync+delegate.+Consider+${delegateName}+as+your+delegate+too%2C+via+this+frame+made+by+%40tempetechie.eth+%26+%40tekr0x.eth+&embeds[]=${host}%2Fframe%2Fdelegate%2Fzk%2Fconfirm%3Ft%3D${timestamp}%26delegate%3D${String(delegateName).replace("@", "")}`;
       const button2 = { text: "Share", action: "link", url: warpcastShareUrl };
-      const button3 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/op/start-1` };
+      const button3 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/zk/start-1` };
 
       return reply.view("./templates/delegate/success.liquid", {
         button1,
@@ -404,11 +403,11 @@ export async function opDelegateTxCallback(request, reply) {
       });
     } else if (txReceipt?.status === 0) {
       // failed tx
-      imageUrl = `${host}/static/img/delegate/op/delegate-fail.png`;
+      imageUrl = `${host}/static/img/delegate/zk/delegate-fail.png`;
       title = "Transaction Failed";
-      description = "Your Optimism delegate transaction has failed.";
+      description = "Your ZkSync delegate transaction has failed.";
 
-      const button2 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/op/start-1` };
+      const button2 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/zk/start-1` };
 
       return reply.view("./templates/delegate/fail.liquid", {
         button1,
@@ -420,11 +419,11 @@ export async function opDelegateTxCallback(request, reply) {
       });
     } else {
       // unknown tx status
-      imageUrl = `${host}/static/img/delegate/op/delegate-unknown.png`;
+      imageUrl = `${host}/static/img/delegate/zk/delegate-unknown.png`;
       title = "Transaction Status Unknown";
-      description = "Your Optimism delegate transaction status is unknown.";
+      description = "Your ZkSync delegate transaction status is unknown.";
 
-      const button2 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/op/start-1` };
+      const button2 = { text: "Back to start", action: "post", url: `${host}/frame/delegate/zk/start-1` };
 
       return reply.view("./templates/delegate/fail.liquid", {
         button1,
@@ -436,10 +435,9 @@ export async function opDelegateTxCallback(request, reply) {
       });
     }
   }
-
 }
 
-export function opDelegateTxData(request, reply) {
+export function zkDelegateTxData(request, reply) {
   // verify the user's signature via airstack API if signature is present
   if (request?.body?.untrustedData && request?.body?.trustedData) {
     validateFramesMessage(request.body.untrustedData, request.body.trustedData)
@@ -452,7 +450,7 @@ export function opDelegateTxData(request, reply) {
     return;
   }
 
-  const opAddress = getOpAddress();
+  const zkAddress = getZkAddress();
 
   const abi = [
     "function delegate(address delegatee) public",
@@ -467,7 +465,7 @@ export function opDelegateTxData(request, reply) {
     chainId: `eip155:${chainId}`,
     params: {
       abi: abi,
-      to: opAddress,
+      to: zkAddress,
       data: txData,
       value: "0",
     },
@@ -476,7 +474,7 @@ export function opDelegateTxData(request, reply) {
   return reply.send(tx);
 }
 
-export async function opMyDelegateShare(request, reply) {
+export async function zkMyDelegateShare(request, reply) {
   // verify the user's signature via airstack API if signature is present
   if (request?.body?.untrustedData && request?.body?.trustedData) {
     validateFramesMessage(request.body.untrustedData, request.body.trustedData)
@@ -506,10 +504,10 @@ export async function opMyDelegateShare(request, reply) {
     return;
   }
 
-  const title = "Share My Optimism Delegate";
-  const description = "Share your Optimism Delegate frame with your friends.";
-  const imageUrl = `${host}/image/op/share?t=${timestamp}&user=${user}&balance=${balance}&delegate=${delegate}&ushort=${userShortAddress}&dshort=${delegateShortAddress}`;
-  const button1 = { text: "Check My Delegate", action: "post", url: `${host}/frame/delegate/op/delegate?t=${timestamp}` };
+  const title = "Share My ZkSync Delegate";
+  const description = "Share your ZkSync Delegate frame with your friends.";
+  const imageUrl = `${host}/image/zk/share?t=${timestamp}&user=${user}&balance=${balance}&delegate=${delegate}&ushort=${userShortAddress}&dshort=${delegateShortAddress}`;
+  const button1 = { text: "Check My Delegate", action: "post", url: `${host}/frame/delegate/zk/delegate?t=${timestamp}` };
 
   return reply.view("./templates/delegate/share.liquid", {
     button1,
@@ -518,4 +516,4 @@ export async function opMyDelegateShare(request, reply) {
     pageUrl,
     title
   });
-}
+} 

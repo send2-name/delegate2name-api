@@ -41,6 +41,23 @@ import {
   delegateOpSuccess,
 } from './controllers/delegate/op/images.js';
 
+import { 
+  zkDelegateConfirm,
+  zkDelegateDelegate,
+  zkMyDelegateShare,
+  zkDelegateStart1, 
+  zkDelegateTxCallback,
+  zkDelegateTxData,
+} from './controllers/delegate/zk/frames.js';
+
+import { 
+  delegateZkConfirm, 
+  delegateZkDelegate, 
+  delegateZkNoDelegate,
+  delegateZkShare,
+  delegateZkSuccess,
+} from './controllers/delegate/zk/images.js';
+
 const app = Fastify({
   logger: true
 });
@@ -114,6 +131,24 @@ app.get('/image/op/delegate', delegateOpDelegate);
 app.get('/image/op/no-delegate', delegateOpNoDelegate);
 app.get('/image/op/share', delegateOpShare);
 app.get('/image/op/success', delegateOpSuccess);
+
+// ZKSYNC DELEGATE FRAMES
+app.get('/frame/delegate/zk/confirm', zkDelegateConfirm);
+app.post('/frame/delegate/zk/confirm', zkDelegateConfirm);
+app.post('/frame/delegate/zk/delegate', zkDelegateDelegate);
+app.get('/frame/delegate/zk/delegate', zkDelegateDelegate);
+app.get('/frame/delegate/zk/share', zkMyDelegateShare);
+app.get('/frame/delegate/zk/start-1', zkDelegateStart1);
+app.post('/frame/delegate/zk/start-1', zkDelegateStart1);
+app.post('/frame/delegate/zk/tx-callback', zkDelegateTxCallback);
+app.post('/frame/delegate/zk/tx-data', zkDelegateTxData);
+
+// ZKSYNC DELEGATE IMAGES
+app.get('/image/zk/confirm', delegateZkConfirm);
+app.get('/image/zk/delegate', delegateZkDelegate);
+app.get('/image/zk/no-delegate', delegateZkNoDelegate);
+app.get('/image/zk/share', delegateZkShare);
+app.get('/image/zk/success', delegateZkSuccess);
 
 // run the server
 app.listen({ port: process.env.PORT || 3000 }, function (err, address) {
