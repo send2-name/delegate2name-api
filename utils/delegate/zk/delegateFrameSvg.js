@@ -13,7 +13,7 @@ export default function(user, balance, delegate, userShortAddress, delegateShort
 
   const delegateData = `
     <text x="50%" y="60%" dominant-baseline="middle" fill="white" text-anchor="middle" font-size="45px" font-family="sans-serif">
-      My zkSync delegate: ${delegateName}
+      My ZKsync delegate: ${delegateName}
     </text>
   `;
 

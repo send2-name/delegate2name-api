@@ -9,7 +9,7 @@ export default function(delegateName) {
       </text>
 
       <text x="50%" y="55%" dominant-baseline="middle" fill="white" text-anchor="middle" font-size="45px" font-family="sans-serif">
-        as your zkSync delegate!
+        as your ZKsync delegate!
       </text>
     </svg>
   `;

@@ -22,7 +22,7 @@ const chains = [
   },
   {
     chainId: 324,
-    name: 'zkSync Era',
+    name: 'ZKsync Era',
     currency: 'ETH',
     rpcs: ['https://mainnet.era.zksync.io'],
     blockExplorer: 'https://era.zksync.network',

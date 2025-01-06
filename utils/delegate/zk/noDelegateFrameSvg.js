@@ -14,7 +14,7 @@ export default function(user, balance, userShortAddress) {
       </text>
 
       <text x="50%" y="60%" dominant-baseline="middle" fill="white" text-anchor="middle" font-size="45px" font-family="sans-serif">
-        My zkSync delegate: No delegate set
+        My ZKsync delegate: No delegate set
       </text>
     </svg>
   `;
